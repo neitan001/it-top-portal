@@ -36,7 +36,7 @@ export default function Home() {
           />
           <ol>
             <li>
-              Get started by editing <code>src/pages/index.js</code>.
+              Ну допустим 123 текст тест <code>src/pages/index.js</code>.
             </li>
             <li>Save and see your changes instantly.</li>
           </ol>
