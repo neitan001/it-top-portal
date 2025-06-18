@@ -19,7 +19,7 @@ export function useAuthLogic(tg_id) {
     }
 
     try {
-      const res = await fetch("/api/auth/mini-app/login", {
+      const res = await fetch("/api/mini-app/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

@@ -67,7 +67,7 @@ export default function App({ Component, pageProps }) {
             return;
           }
 
-          const res = await fetch("/api/auth/mini-app/validate-tg", {
+          const res = await fetch("/api/mini-app/auth/validate-tg", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ initData }),
