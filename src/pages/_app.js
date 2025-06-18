@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Script from "next/script";
 
+import logger from '../lib/logger';
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [tgId, setTgId] = useState(null);
@@ -60,7 +62,7 @@ export default function App({ Component, pageProps }) {
 
           if (!userId || !initData) {
             if (process.env.NODE_ENV !== "development") {
-              console.log("userId или initData не найдены!")
+              logger.info('userId или initData не найдены!');
             }
             return;
           }
@@ -76,7 +78,7 @@ export default function App({ Component, pageProps }) {
           if (res.ok && data.valid) {
             setTgId(userId);
           } else {
-            return
+            logger.info('Не валидный хэш');
           }
         } catch (error) {
           return
