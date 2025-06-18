@@ -57,13 +57,18 @@ export default function App({ Component, pageProps }) {
 
           tgWebApp.expand?.();
 
-          const initData = tgWebApp.initData;
           const userId = tgWebApp.initDataUnsafe?.user?.id;
 
+          if (process.env.NODE_ENV === "development") {
+            const devUserId = userId || 721135016;
+            console.log(`Development mode: используется tg_id ${devUserId} в обход валидации`);
+            setTgId(devUserId);
+            return;
+          }
+
+          const initData = tgWebApp.initData;
           if (!userId || !initData) {
-            if (process.env.NODE_ENV !== "development") {
-              logger.info('userId или initData не найдены!');
-            }
+            logger.info('userId или initData не найдены!');
             return;
           }
 
