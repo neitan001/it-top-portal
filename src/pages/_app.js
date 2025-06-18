@@ -60,7 +60,7 @@ export default function App({ Component, pageProps }) {
 
           if (!userId || !initData) {
             if (process.env.NODE_ENV !== "development") {
-              router.push("/");
+              console.log("userId или initData не найдены!")
             }
             return;
           }
@@ -76,10 +76,10 @@ export default function App({ Component, pageProps }) {
           if (res.ok && data.valid) {
             setTgId(userId);
           } else {
-            router.push("/");
+            return
           }
         } catch (error) {
-          router.push("/");
+          return
         }
       };
 
