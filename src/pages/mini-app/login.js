@@ -31,7 +31,7 @@ export default function LoginPage({ tg_id }) {
                 name="login"
                 placeholder="Ваш логин от Journal..."
                 required
-                className={styles.input}
+                className={`${styles.input} ${styles.inputleft}`}
               />
             </div>
             <div className={styles.inputGroup}>
@@ -41,7 +41,7 @@ export default function LoginPage({ tg_id }) {
                 name="password"
                 placeholder="Ваш пароль от Journal..."
                 required
-                className={styles.input}
+                className={`${styles.input} ${styles.inputright}`}
               />
             </div>
             <button type="submit" className={styles.submitButton}>

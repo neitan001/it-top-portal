@@ -30,6 +30,8 @@
   font-weight: 700;
   letter-spacing: 1px;
   transition: color var(--transition-speed) ease;
+  position: relative;
+  animation: jumpInFromTop 0.8s ease forwards;
 }
 
 .idBadge {
@@ -44,6 +46,7 @@
   justify-content: center;
   box-shadow: 0 2px 5px var(--shadow-color);
   transition: all var(--transition-speed) ease;
+  animation: jumpInFromTop 0.8s ease forwards;
 }
 
 .welcomeText {
@@ -77,6 +80,14 @@
   outline: none;
   transition: all var(--transition-speed) ease;
   box-sizing: border-box;
+}
+
+.inputleft {
+  animation: slideInFromLeft 0.5s forwards ease-out;
+}
+
+.inputright {
+  animation: slideInFromRight 0.5s forwards ease-out;
 }
 
 .input::placeholder {
@@ -184,4 +195,41 @@
 @keyframes underlineOut {
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
+}
+
+@keyframes jumpInFromTop {
+    0% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(20px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-500px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(500px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
