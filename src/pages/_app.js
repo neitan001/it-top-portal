@@ -73,6 +73,12 @@ export default function App({ Component, pageProps }) {
             body: JSON.stringify({ initData }),
           });
 
+          if (!res.ok) {
+            const text = await res.text();
+            logger.error(`Ошибка API: статус ${res.status}, тело: ${text}`);
+            return;
+          }
+
           const data = await res.json();
 
           if (res.ok && data.valid) {
