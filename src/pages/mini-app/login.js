@@ -52,7 +52,7 @@ export default function LoginPage({ tg_id }) {
           <div className={styles.copyright}>
             Mini App by{' '}
             <a
-              href="https://t.me/Neitan0"
+              href="https://neitan-dev.ru/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.highlightLink}
