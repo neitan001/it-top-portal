@@ -78,10 +78,10 @@ export default function App({ Component, pageProps }) {
           if (res.ok && data.valid) {
             setTgId(userId);
           } else {
-            logger.info('Не валидный хэш');
+            logger.info('Не валидный');
           }
         } catch (error) {
-          return
+          logger.error('Ошибка в verifyTgAuth:', error);
         }
       };
 
