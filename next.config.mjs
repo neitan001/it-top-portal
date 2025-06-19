@@ -1,11 +1,10 @@
-import JavaScriptObfuscator from 'webpack-obfuscator';
+const JavaScriptObfuscator = (await import('webpack-obfuscator')).default;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false,
 
-  webpack(config, { isServer, dev }) {
+  webpack(config, { dev, isServer }) {
     if (!dev && !isServer) {
       config.plugins.push(
         new JavaScriptObfuscator(
@@ -14,15 +13,15 @@ const nextConfig = {
             compact: true,
             stringArray: true,
             stringArrayEncoding: ['rc4'],
-            stringArrayThreshold: 0.75
+            stringArrayThreshold: 0.75,
           },
-          ['excluded-bundle.js']
+          ['excluded.js']
         )
       );
     }
 
     return config;
-  }
+  },
 };
 
 export default nextConfig;
