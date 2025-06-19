@@ -31,7 +31,7 @@ export default function handler(req, res) {
       "subject_name": "Русский язык (РПО)",
       "room_name": "3 [BLUE]"
     },
-    {
+    { 
       "date": "2025-06-02",
       "lesson": 4,
       "started_at": "13:40",
