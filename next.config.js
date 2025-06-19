@@ -1,27 +1,28 @@
-const WebpackObfuscator = require('webpack-obfuscator');
-
 module.exports = {
   reactStrictMode: true,
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.plugins.push(
-        new WebpackObfuscator(
-          {
-            rotateStringArray: true,
-            stringArray: true,
-            stringArrayThreshold: 0.75,
-            compact: true,
-            controlFlowFlattening: true,
-            controlFlowFlatteningThreshold: 0.75,
-            numbersToExpressions: true,
-            simplify: true,
-            shuffleStringArray: true,
-            splitStrings: true,
-            splitStringsChunkLength: 10,
-          },
-          ["excluded-file.js"]
-        )
+  compress: {
+    drop_console: true,
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      const terser = config.optimization.minimizer.find(
+        (plugin) => plugin.constructor.name === "TerserPlugin"
       );
+      if (terser) {
+        terser.options.terserOptions = {
+          mangle: true,
+          keep_classnames: false,
+          keep_fnames: false,
+          format: {
+            comments: false,
+          },
+          compress: {
+            drop_console: true,
+            pure_funcs: ['console.info'],
+            passes: 2,
+          },
+        };
+      }
     }
     return config;
   },
