@@ -1,13 +1,11 @@
-import pkg from 'webpack-obfuscator';
-const { JavaScriptObfuscator } = pkg;
+const WebpackObfuscator = require('webpack-obfuscator');
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   reactStrictMode: true,
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
       config.plugins.push(
-        new JavaScriptObfuscator(
+        new WebpackObfuscator(
           {
             rotateStringArray: true,
             stringArray: true,
@@ -28,5 +26,3 @@ const nextConfig = {
     return config;
   },
 };
-
-export default nextConfig;
