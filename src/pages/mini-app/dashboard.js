@@ -8,7 +8,7 @@ export default function Dashboard() {
       <Calendar />
       
       <div>
-        <Navigation activePage="/dashboard" />
+        <Navigation activePage="/mini-app/dashboard" />
       </div>
     </div>
   );

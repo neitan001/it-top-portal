@@ -1,0 +1,329 @@
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 80px;
+  margin-bottom: 50px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(28, 28, 30, 0.8);
+  border-radius: 14px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.gradeH1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #ffffff;
+    animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.gradeH1 span {
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 5px;
+}
+
+.gradeH2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.gradeP {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.subjectFilter {
+    margin-bottom: 20px;
+    width: 100%;
+    min-width: 200px;
+    padding: 12px 16px;
+    font-size: 16px;
+    color: white;
+    background: rgba(28, 28, 30, 0.8);
+    border-radius: 14px;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    -webkit-appearance: menulist;
+    appearance: menulist;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.title span {
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 5px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(60px, 1fr));
+  gap: 10px;
+  width: fit-content;
+  padding: 0 5px;
+  animation: appleScaleIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.gradeTitle {
+  font-size: 24px;
+  margin: 0;
+}
+
+.gradeSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+}
+
+.gradeItem {
+  height: 80px;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 10px;
+  position: relative;
+  animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.gradeItem:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 5px;
+}
+
+.date.white {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pairNumber {
+  font-size: 18px;
+  font-weight: 500;
+  color: #0A84FF;
+}
+
+.pass {
+  background-color: rgba(255, 59, 48, 0.2);
+}
+
+.late {
+  background-color: rgba(255, 204, 0, 0.2);
+}
+
+.centerBackground {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+.pass .centerBackground {
+  background-color: rgba(255, 59, 48, 0.2);
+}
+
+.late .centerBackground {
+  background-color: rgba(255, 204, 0, 0.2);
+}
+
+.navButton {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  animation: appleScaleIn 0.6s ease-out;
+  transition: background 0.25s ease;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.navIcon {
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
+}
+
+.active .navIcon {
+  color: #0A84FF;
+  fill: #0A84FF;
+}
+
+.gradeCircles {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 10px;
+  width: fit-content;
+  margin-left: auto;
+  animation: appleScaleIn 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.25s ease;
+}
+
+.circle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContent {
+  background: rgba(28, 28, 30, 0.95);
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 80%;
+  max-width: 600px;
+  border-radius: 20px;
+  position: relative;
+  animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.close {
+  color: #0A84FF;
+  font-size: 30px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.close:hover,
+.close:focus {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.divider {
+  border: none;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 15px 0;
+  width: 100%;
+}
+
+.statusMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  color: #ffffff;
+  background: rgba(28, 28, 30, 0.95);
+  padding: 24px 32px;
+  border-radius: 20px;
+  text-align: center;
+  z-index: 1000;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes colorChange {
+    0% {
+        background: #0A84FF;
+    }
+    25% {
+        background: #007AFF;
+    }
+    50% {
+        background: #0A84FF;
+    }
+    75% {
+        background: #007AFF;
+    }
+    100% {
+        background: #0A84FF;
+    }
+}
+
+@keyframes appleScaleIn {
+    from { transform: scale(0.1); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}

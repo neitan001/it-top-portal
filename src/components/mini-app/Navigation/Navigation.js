@@ -3,7 +3,7 @@ import styles from './Navigation.module.css';
 export default function Navigation({ activePage }) {
   const navItems = [
     {
-      path: '/dashboard',
+      path: '/mini-app/dashboard',
       icon: (
         <svg width="31" height="30" viewBox="0 0 31 30" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -16,7 +16,7 @@ export default function Navigation({ activePage }) {
       )
     },
     {
-      path: '/grades',
+      path: '/mini-app/grades',
       icon: (
         <svg width="30" height="29" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -26,7 +26,7 @@ export default function Navigation({ activePage }) {
       )
     },
     {
-      path: '/feedback',
+      path: '/mini-app/feedback',
       icon: (
         <svg width="30" height="28" viewBox="0 0 30 28" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -36,7 +36,7 @@ export default function Navigation({ activePage }) {
       )
     },
     {
-      path: '/profile',
+      path: '/mini-app/profile',
       icon: (
         <svg width="18" height="23" viewBox="0 0 18 23" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
