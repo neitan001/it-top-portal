@@ -3,6 +3,7 @@ import JavaScriptObfuscator from 'webpack-obfuscator';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: false,
 
   webpack(config, { isServer, dev }) {
     if (!dev && !isServer) {
