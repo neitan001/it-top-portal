@@ -23,9 +23,19 @@ jobs:
       - name: Deploy over SSH
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd ~/apps/nextjs-app
-            git pull origin master
-            npm install
+            set -e
+            cd ~/apps/nextjs-app || exit
+            echo "Pulling latest changes..."
+            git fetch origin
+            git reset --hard origin/master
+            echo "Current commit: $(git log -1 --oneline)"
+            echo "Installing dependencies..."
+            npm install --production
+            echo "Building application..."
             npm run build
-            pm2 restart nextjs-app
+            echo "Restarting PM2..."
+            pm2 delete nextjs-app || true
+            pm2 start npm --name "nextjs-app" -- start
+            pm2 save
+            echo "Deployment complete!"
           EOF
