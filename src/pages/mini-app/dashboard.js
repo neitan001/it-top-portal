@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import styles from '@/styles/Dashboard.module.css';
 import Navigation from '@/components/mini-app/Navigation/Navigation';
 import Calendar from '@/components/mini-app/Calendar/Calendar';
