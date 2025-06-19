@@ -11,10 +11,15 @@ const Calendar = () => {
     const [error, setError] = useState(null);
     const [currentSelectedDay, setCurrentSelectedDay] = useState(new Date().getDate());
     const [isFirstRender, setIsFirstRender] = useState(true);
-    const calendarRef = useRef(null);
-    const monthHeaderRef = useRef(null);
+    const [hasFetched, setHasFetched] = useState(false);
     const touchStartX = useRef(0);
     const dayTouchStartX = useRef(0);
+    const [isVisible, setIsVisible] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isAcademicTime = () => {
         const now = new Date();
@@ -96,6 +101,8 @@ const Calendar = () => {
             setError('Ошибка загрузки расписания');
         } finally {
             setLoading(false);
+            setHasFetched(true);
+            setIsVisible(true);
         }
     };
 
@@ -267,20 +274,27 @@ const Calendar = () => {
                 </div>
             </div>
 
-            <div className={styles.schedule}>
+            <div className={`${styles.schedule} ${!loading && isVisible ? styles.visible : ''}`}>
                 {loading && (
                     <div className={styles.statusMessage}>Загрузка...</div>
                 )}
-                {error ? (
+
+                {!loading && error && (
                     <div className={styles.errorMessage}>
                         <p>{error}</p>
                     </div>
-                ) : schedule.length > 0 ? (
+                )}
+
+                {!loading && !error && schedule.length > 0 && (
                     <div className={styles.scheduleItems}>
                         {schedule.map((item, index) => (
                             <div
                                 key={index}
-                                className={`${styles.scheduleItem} ${item.isActive ? styles.highlight : ''}`}
+                                className={`
+                                ${styles.scheduleItem} 
+                                ${mounted ? styles.animate : ''} 
+                                ${item.isActive ? styles.highlight : ''}
+                            `}
                             >
                                 <div className={styles.scheduleHeader}>
                                     <span className={styles.dot}></span>
@@ -294,7 +308,9 @@ const Calendar = () => {
                             </div>
                         ))}
                     </div>
-                ) : (
+                )}
+
+                {!loading && hasFetched && !error && schedule.length === 0 && (
                     <div className={styles.errorMessage}>
                         <p>Расписание не найдено</p>
                     </div>

@@ -30,7 +30,7 @@
     backdrop-filter: blur(20px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     border: 0.5px solid rgba(255, 255, 255, 0.1);
-    animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    animation: jumpInFromTop 1.2s ease-out forwards;
 }
 
 .scheduleH2 {
@@ -65,8 +65,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: translateY(20px);
-    animation: appleScaleIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
     animation-delay: 0.2s;
 }
 
@@ -94,8 +92,6 @@
     justify-content: center;
     padding: 0;
     box-sizing: border-box;
-    transform: scale(0.8);
-    animation: appleScaleIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
     animation-delay: 0.4s;
     transition: background 0.25s ease;
 }
@@ -148,6 +144,11 @@
     backdrop-filter: blur(20px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     border: 0.5px solid rgba(255, 255, 255, 0.1);
+    display: none;
+}
+
+.schedule.visible {
+  display: flex;
 }
 
 .scheduleItems {
@@ -157,20 +158,24 @@
 }
 
 .scheduleItem {
-    background: rgba(44, 44, 46, 0.6);
-    border-left: 4px solid #2c2c2e;
-    border-radius: 12px;
-    padding: 16px;
-    transform: translateY(10px);
-    animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  background: rgba(44, 44, 46, 0.6);
+  border-left: 4px solid #2c2c2e;
+  border-radius: 12px;
+  padding: 16px;
+  transform: translateY(10px);
+  opacity: 0;
 }
 
-.scheduleItem:nth-child(odd) {
-    animation-delay: 0.5s;
+.scheduleItem.animate {
+  animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-.scheduleItem:nth-child(even) {
-    animation-delay: 0.7s;
+.scheduleItem.animate:nth-child(odd) {
+  animation-delay: 0.5s;
+}
+
+.scheduleItem.animate:nth-child(even) {
+  animation-delay: 0.7s;
 }
 
 .scheduleHeader {
@@ -209,4 +214,27 @@
 @keyframes appleScaleIn {
     from { transform: scale(0.1); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes jumpInFromTop {
+  0% {
+    transform: translateY(-200%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(-20px);
+  }
+  85% {
+    transform: translateY(10px);
+  }
+  92% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
