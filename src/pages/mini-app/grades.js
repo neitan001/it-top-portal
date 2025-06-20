@@ -1,5 +1,8 @@
-import Grades from '@/components/mini-app/Grades/Grades';
-import Navigation from '@/components/mini-app/Navigation/Navigation';
+import dynamic from 'next/dynamic';
+
+const Navigation = dynamic(() => import('@/components/mini-app/Navigation/Navigation'));
+const Grades = dynamic(() => import('@/components/mini-app/Grades/Grades'));
+
 
 export default function GradesPage() {
   return (
