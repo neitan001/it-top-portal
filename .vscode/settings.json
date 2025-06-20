@@ -1,0 +1,11 @@
+{
+  "directoryTreeGenerator.excludeFolders": [
+    "node_modules",
+    ".next",
+    ".git",
+    "dist",
+    "build",
+    ".vscode",
+    "public"
+  ]
+}
