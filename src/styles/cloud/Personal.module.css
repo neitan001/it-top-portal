@@ -351,6 +351,19 @@
   color: #888;
 }
 
+.dropZone.dragging {
+  background: rgba(243, 43, 59, 0.1);
+  border: 2px dashed #F32B3B;
+}
+
+.dropZone.dragging::after {
+  content: 'Отпустите для загрузки ' attr(data-count) ' файлов';
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #F32B3B;
+}
+
 .deleteButton {
   padding: 6px 12px;
   background-color: #f44336;

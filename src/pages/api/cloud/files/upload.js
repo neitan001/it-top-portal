@@ -43,13 +43,14 @@ export default async function handler(req, res) {
 
     const userId = decoded.userId;
 
+    // Проверка доступного места
     const [[{ totalSize }]] = await db.execute(
       'SELECT SUM(size) AS totalSize FROM files WHERE owner_id = ?',
       [userId]
     );
 
     const usedSpace = totalSize || 0;
-    const STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024;
+    const STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024; // 1GB
 
     if (usedSpace >= STORAGE_LIMIT_BYTES) {
       return res.status(403).json({
@@ -82,16 +83,6 @@ export default async function handler(req, res) {
     });
 
     const remainingSpace = STORAGE_LIMIT_BYTES - usedSpace;
-
-    if (remainingSpace <= 0) {
-      return res.status(403).json({
-        error: 'Превышен лимит хранилища',
-        code: 'STORAGE_LIMIT_EXCEEDED',
-        used: usedSpace,
-        limit: STORAGE_LIMIT_BYTES
-      });
-    }
-
     const upload = multer({
       storage,
       limits: {
@@ -99,74 +90,84 @@ export default async function handler(req, res) {
       }
     });
 
-    await new Promise((resolve, reject) => {
-      upload.single('file')(req, res, (err) => {
+    // Обработка загрузки файлов
+    const files = await new Promise((resolve, reject) => {
+      upload.array('files[]', 10)(req, res, (err) => {
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(403).json({
+            return reject({
+              status: 403,
               error: 'Размер файла превышает доступное свободное место',
               code: 'FILE_TOO_LARGE',
-              limit: STORAGE_LIMIT_BYTES - usedSpace,
+              limit: remainingSpace,
             });
           }
-
-          console.error('Multer error:', err);
-          return res.status(400).json({
+          return reject({
+            status: 400,
             error: 'Ошибка загрузки файла',
             code: err.code || 'UPLOAD_MULTER_ERROR',
           });
         } else if (err) {
-          console.error('Unknown upload error:', err);
-          return res.status(500).json({
+          return reject({
+            status: 500,
             error: 'Неизвестная ошибка при загрузке файла',
             code: 'UPLOAD_UNKNOWN_ERROR',
           });
         }
-
-        resolve();
+        resolve(req.files);
       });
     });
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Файл не загружен' });
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'Файлы не загружены' });
     }
 
     try {
-      const originalNameFixed = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+      const results = [];
+      for (const file of files) {
+        const originalNameFixed = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        const sql = `INSERT INTO files (owner_id, original_name, server_name, size, mime_type) VALUES (?, ?, ?, ?, ?)`;
+        const params = [
+          userId,
+          originalNameFixed,
+          file.filename,
+          file.size,
+          file.mimetype,
+        ];
 
-      const sql = `INSERT INTO files (owner_id, original_name, server_name, size, mime_type) VALUES (?, ?, ?, ?, ?)`;
-      const params = [
-        userId,
-        originalNameFixed,
-        req.file.filename,
-        req.file.size,
-        req.file.mimetype,
-      ];
+        await db.execute(sql, params);
+        results.push({
+          original_name: originalNameFixed,
+          server_name: file.filename,
+          size: file.size,
+          mime_type: file.mimetype
+        });
+      }
 
-      logger.info(`Файл загружен: userId=${userId}, originalName=${originalNameFixed}, serverName=${req.file.filename}, size=${req.file.size}, mimeType=${req.file.mimetype}`);
-
-      await db.execute(sql, params);
       return res.status(201).json({
         success: true,
-        original_name: originalNameFixed,
-        message: 'Файл успешно загружен',
-        filename: req.file.filename,
-        size: req.file.size,
-        mime_Type: req.file.mimetype
+        files: results,
+        message: `Успешно загружено ${files.length} файлов`
       });
     } catch (error) {
-      try {
-        fs.unlinkSync(path.join(userFolder, req.file.filename));
-      } catch (unlinkError) {
-        logger.error('Ошибка при удалении файла после неудачной записи в БД:', unlinkError);
-      }
+      // Удаляем все загруженные файлы в случае ошибки
+      files.forEach(file => {
+        try {
+          fs.unlinkSync(path.join(userFolder, file.filename));
+        } catch (unlinkError) {
+          logger.error('Ошибка при удалении файла:', unlinkError);
+        }
+      });
+      
       throw error;
     }
+
   } catch (error) {
     console.error('Ошибка в API:', error);
-    return res.status(500).json({
-      error: error.message || 'Ошибка сервера',
-      code: 'UPLOAD_ERROR'
+    const status = error.status || 500;
+    return res.status(status).json({
+      error: error.error || error.message || 'Ошибка сервера',
+      code: error.code || 'UPLOAD_ERROR'
     });
   }
 }

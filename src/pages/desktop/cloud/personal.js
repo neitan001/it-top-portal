@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
@@ -46,7 +46,7 @@ const Toast = Swal.mixin({
   toast: true,
   position: 'top-end',
   width: '380px',
-  padding:'0.8rem',
+  padding: '0.8rem',
   background: '#1a1a1a',
   color: 'white',
   iconColor: '#F32B3B',
@@ -58,6 +58,7 @@ const Toast = Swal.mixin({
     toast.style.borderRadius = '8px';
   }
 });
+
 Swal.fire = Toast.fire;
 
     useEffect(() => {
@@ -202,16 +203,52 @@ Swal.fire = Toast.fire;
     const handleDragOver = (e) => {
       e.preventDefault();
     };
+    
+const handleFilesUpload = useCallback(async (formData) => {
+        try {
+            const res = await fetch('/api/cloud/files/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            });
 
-    const handleDrop = (e) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const files = e.dataTransfer.files;
-      if (files.length) {
-        const mockEvent = { target: { files } };
-        handleFileChange(mockEvent);
-      }
-    };
+            if (res.ok) {
+                Toast.fire({
+                    icon: 'success',
+                    title: `Загружено ${formData.getAll('files[]').length} файлов`
+                });
+                window.location.reload();
+            } else {
+                const errorData = await res.json();
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: errorData.error || 'Не удалось загрузить файлы'
+                });
+            }
+        } catch (error) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Ошибка сети',
+                text: 'Проблемы при соединении с сервером'
+            });
+        }
+    }, [Toast]);
+
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        
+        const droppedFiles = e.dataTransfer.files;
+        if (droppedFiles.length === 0) return;
+
+        const formData = new FormData();
+        for (let i = 0; i < droppedFiles.length; i++) {
+            formData.append('files[]', droppedFiles[i]);
+        }
+
+        handleFilesUpload(formData);
+    }, [handleFilesUpload]);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -228,7 +265,6 @@ Swal.fire = Toast.fire;
 
                 if (res.ok) {
                     const data = await res.json();
-
                     setFiles(data.files);
                 } else {
                     setError('Не удалось загрузить данные файлов');
@@ -257,47 +293,48 @@ Swal.fire = Toast.fire;
     };
 
     const handleFileChange = async (event) => {
-        const files = event.target.files;
-        if (!files || files.length === 0) return;
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
 
-        const formData = new FormData();
-        formData.append('file', files[0]);
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files[]', files[i]);
+      }
 
-        try {
-            const res = await fetch('/api/cloud/files/upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-            });
+      try {
+        const res = await fetch('/api/cloud/files/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
 
-            if (res.ok) {
-            Toast.fire({
-              icon: 'success',
-              title: 'Успех!',
+        if (res.ok) {
+          Toast.fire({
+            icon: 'success',
+            title: `Загружено ${files.length} файлов`,
           });
           window.location.reload();
-      } 
-            else {
-            const errorData = await res.json();
-            Toast.fire({
-              icon: 'error',
-              title: 'Ошибка',
-              text: errorData.error || 'Не удалось загрузить файл',
-            });
-            }
-        } catch (error) {
-            Toast.fire({
-              position: "top-end",
-              icon: 'error',
-              title: 'Ошибка',
-              text: 'Ошибка сети при загрузке файла',
-              timer: 2000,
-              showConfirmButton: false,
-              toast:true,
-              width: '380px'
-            });
-            console.error(error);
+        } else {
+          const errorData = await res.json();
+          Toast.fire({
+            icon: 'error',
+            title: 'Ошибка',
+            text: errorData.error || 'Не удалось загрузить файлы',
+          });
         }
+      } catch (error) {
+        Toast.fire({
+          position: "top-end",
+          icon: 'error',
+          title: 'Ошибка',
+          text: 'Ошибка сети при загрузке файлов',
+          timer: 2000,
+          showConfirmButton: false,
+          toast: true,
+          width: '380px'
+        });
+        console.error(error);
+      }
     };
     const handleLogout = async () => {
         try {
