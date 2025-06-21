@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { encryptPassword } from '../../../lib/crypto';
-import { getConnection } from '../../../lib/db';
-import { logger } from '../../../lib/logger';
+import { encryptPassword } from '@/lib/cloud/crypto';
+import { db } from '@/lib/cloud/db';
+import { logger } from '@/lib/cloud/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -15,7 +15,7 @@ function getDefaultHeaders() {
   };
 }
 
-async function requestAuthToken(login, password, applicationKey) {
+async function parseAuthTokenFromJournal(login, password, applicationKey) {
   try {
     const response = await fetch(process.env.AUTH_URL, {
       method: 'POST',
@@ -40,7 +40,7 @@ async function requestAuthToken(login, password, applicationKey) {
   }
 }
 
-async function fetchUserName(accessToken) {
+async function parseStudentInfoFromJournal(accessToken) {
   try {
     const response = await fetch(process.env.USER_INFO, {
       method: 'GET',
@@ -57,7 +57,6 @@ async function fetchUserName(accessToken) {
 
     const data = await response.json();
 
-    // Выделяем имя из full_name (второе слово)
     function extractFirstName(fullName) {
       if (!fullName) return null;
       const parts = fullName.trim().split(/\s+/);
@@ -78,13 +77,10 @@ async function saveOrUpdateUser(login, password, token) {
     return null;
   }
 
-  let connection;
   try {
-    connection = await getConnection();
-
     const encryptedPassword = encryptPassword(password, encryptionKey);
 
-    const [users] = await connection.execute(
+    const [users] = await db.execute(
       `SELECT user_id FROM users WHERE login = ?`,
       [login]
     );
@@ -92,7 +88,7 @@ async function saveOrUpdateUser(login, password, token) {
     let user_id;
 
     if (users.length === 0) {
-      const [result] = await connection.execute(
+      const [result] = await db.execute(
         `INSERT INTO users (login, password, token) VALUES (?, ?, ?)`,
         [login, encryptedPassword, token]
       );
@@ -100,7 +96,7 @@ async function saveOrUpdateUser(login, password, token) {
       logger.info(`Новый пользователь с логином ${login} добавлен в базу.`);
     } else {
       user_id = users[0].user_id;
-      await connection.execute(
+      await db.execute(
         `UPDATE users SET password = ?, token = ? WHERE user_id = ?`,
         [encryptedPassword, token, user_id]
       );
@@ -111,14 +107,11 @@ async function saveOrUpdateUser(login, password, token) {
   } catch (error) {
     logger.error('Database error:', error);
     return null;
-  } finally {
-    if (connection) connection.release();
   }
 }
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    // твоя уже существующая логика входа
     try {
       const { login, password } = req.body;
       const applicationKey = process.env.APPLICATION_KEY;
@@ -127,15 +120,19 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Необходимы login, password и application_key' });
       }
 
-      const accessToken = await requestAuthToken(login, password, applicationKey);
+      const accessToken = await parseAuthTokenFromJournal(login, password, applicationKey);
 
       if (!accessToken) {
         return res.status(401).json({ error: 'Не удалось авторизоваться. Проверьте введенные данные.' });
       }
 
-      const userName = await fetchUserName(accessToken);
+      const userName = await parseStudentInfoFromJournal(accessToken);
 
       const userId = await saveOrUpdateUser(login, password, accessToken);
+
+      if (!userId) {
+        return res.status(500).json({ error: 'Ошибка обработки пользователя. Попробуйте позже.' });
+      }
 
       const tokenPayload = { login, name: userName, userId };
       const jwtToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -152,7 +149,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Internal server error' });
     }
   } else if (req.method === 'GET') {
-    // сюда добавляем проверку авторизации по cookie
     try {
       const token = req.cookies.token;
 

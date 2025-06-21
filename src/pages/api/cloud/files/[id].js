@@ -1,11 +1,12 @@
-import { getConnection } from '../../../lib/db';
+import { db } from '@/lib/cloud/db';
 import jwt from 'jsonwebtoken';
-import cookie from 'cookie';
+import * as cookie from 'cookie';
 import fs from 'fs';
+import fsp from 'fs/promises';
 import path from 'path';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 export const config = {
     api: {
@@ -31,34 +32,29 @@ export default async function handler(req, res) {
         const decoded = jwt.verify(token, JWT_SECRET);
         const userId = decoded.userId;
 
-        const connection = await getConnection();
-        try {
-            const [fileRows] = await connection.execute(
-                `SELECT id, original_name, server_name, size, mime_type, owner_id 
-                 FROM files WHERE id = ?`,
-                [parseInt(id)]
-            );
+        const [fileRows] = await db.execute(
+            `SELECT id, original_name, server_name, size, mime_type, owner_id 
+             FROM files WHERE id = ?`,
+            [parseInt(id)]
+        );
 
-            if (fileRows.length === 0) {
-                return res.status(404).json({ error: 'Файл не найден в базе данных' });
-            }
+        if (fileRows.length === 0) {
+            return res.status(404).json({ error: 'Файл не найден в базе данных' });
+        }
 
-            const file = fileRows[0];
+        const file = fileRows[0];
 
-            if (file.owner_id !== userId) {
-                return res.status(403).json({ error: 'Нет доступа к файлу' });
-            }
+        if (file.owner_id !== userId) {
+            return res.status(403).json({ error: 'Нет доступа к файлу' });
+        }
 
-            switch (req.method) {
-                case 'GET':
-                    return handleDownload(res, file);
-                case 'DELETE':
-                    return handleDelete(connection, res, file, id);
-                default:
-                    return res.status(405).json({ error: 'Метод не поддерживается' });
-            }
-        } finally {
-            connection.release();
+        switch (req.method) {
+            case 'GET':
+                return handleDownload(res, file);
+            case 'DELETE':
+                return handleDelete(res, file, id);
+            default:
+                return res.status(405).json({ error: 'Метод не поддерживается' });
         }
     } catch (error) {
         console.error('Ошибка при обработке файла:', error);
@@ -74,35 +70,48 @@ async function handleDownload(res, file) {
     const filePath = path.join(userUploadDir, file.server_name);
     
     try {
-        await fs.promises.access(filePath, fs.constants.F_OK);
-    } catch {
-        return res.status(404).json({ 
-            error: 'Файл не найден на сервере',
-            detail: `Искали по пути: ${filePath}`
+        await fsp.access(filePath);
+        
+        res.setHeader('Content-Type', file.mime_type);
+        res.setHeader('Content-Length', file.size);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.original_name)}"`);
+
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+        
+        fileStream.on('error', (err) => {
+            console.error('Ошибка потока файла:', err);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Ошибка при чтении файла' });
+            }
         });
+        
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return res.status(404).json({ 
+                error: 'Файл не найден на сервере',
+                detail: `Путь: ${filePath}`
+            });
+        }
+        return res.status(500).json({ error: 'Ошибка сервера' });
     }
-
-    res.setHeader('Content-Type', file.mime_type);
-    res.setHeader('Content-Length', file.size);
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.original_name)}"`);
-
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
 }
 
-async function handleDelete(connection, res, file, id) {
+async function handleDelete(res, file, id) {
     const userUploadDir = path.join(UPLOAD_DIR, `user_${file.owner_id}`);
     const filePath = path.join(userUploadDir, file.server_name);
 
     try {
         try {
-            await fs.promises.access(filePath, fs.constants.F_OK);
-            await fs.promises.unlink(filePath);
+            await fsp.unlink(filePath);
         } catch (err) {
-            console.warn(`Файл не найден при удалении: ${filePath}`, err);
+            if (err.code !== 'ENOENT') {
+                throw err;
+            }
+            console.warn(`Файл не найден при удалении: ${filePath}`);
         }
 
-        await connection.execute(
+        await db.execute(
             `DELETE FROM files WHERE id = ?`,
             [parseInt(id)]
         );

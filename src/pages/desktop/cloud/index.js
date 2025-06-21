@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import styles from '@/styles/cloud/Index.module.css';
 
 export default function Home() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function Home() {
     }, 2000);
     
     const redirectTimeout = setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/desktop/cloud/dashboard');
     }, 3000);
     
     return () => {
@@ -78,7 +79,7 @@ export default function Home() {
     if (!response.ok) throw new Error(data.error || 'Ошибка авторизации');
 
     localStorage.setItem('authToken', data.token);
-    setUserName(data.user?.name || login);  // Здесь вытягиваем имя из объекта user
+    setUserName(data.user?.name || login);
     localStorage.setItem('userName', data.user.name);
     setShowWelcome(true);
   } catch (err) {
@@ -98,25 +99,25 @@ export default function Home() {
   </svg>
   );
 
-  return (
-    <div className="page-wrapper">
-      <div className={`logo-container ${isExiting ? 'fly-into' : ''}`}>
+return (
+    <div className={styles.pageWrapper}>
+      <div className={`${styles.logoContainer} ${isExiting ? styles.logoContainerFlyInto : ''}`}>
         <Logo />
-        <div className="logo-text">IT TOP | Cloud</div>
+        <div className={styles.logoText}>IT TOP | Cloud</div>
       </div>
 
-      <div className={`container ${isExiting ? 'slide-out-down' : ''}`} id="container">
-        <div className="form-container">
+      <div className={`${styles.container} ${isExiting ? styles.containerSlideOutDown : ''}`} id="container">
+        <div className={styles.formContainer}>
           {showWelcome ? (
-            <div className="welcome-box">
+            <div className={styles.welcomeBox}>
               <h1>Добро пожаловать, {userName}!</h1>
-              <div className="redirect-message">
+              <div className={styles.redirectMessage}>
                 <p>Перенаправляем на панель...</p>
-                <div className="loading-spinner"></div>
+                <div className={styles.loadingSpinner}></div>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} className={styles.form}>
               <h1>Вход</h1>
               <input
                 type="text"
@@ -124,6 +125,7 @@ export default function Home() {
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
                 required
+                className={styles.input}
               />
               <input
                 type="password"
@@ -131,22 +133,23 @@ export default function Home() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className={styles.input}
               />
-              {error && <p className="error-text">{error}</p>}
-              <button type="submit" disabled={isLoading}>
+              {error && <p className={styles.errorText}>{error}</p>}
+              <button type="submit" disabled={isLoading} className={`${styles.button} ${isLoading ? styles.buttonDisabled : ''}`}>
                 {isLoading ? "Вход..." : "Войти"}
               </button>
             </form>
           )}
         </div>
 
-        <div className="overlay-container">
-          <div className="overlay">
-            <div className="overlay-panel">
+        <div className={styles.overlayContainer}>
+          <div className={styles.overlay}>
+            <div className={styles.overlayPanel}>
               <h1>Добро пожаловать!</h1>
               <p>
                 Войдите, используя логин и пароль от&nbsp;
-                <a href="https://journal.top-academy.ru" target="_blank" rel="noreferrer">Journal</a>
+                <a href="https://journal.top-academy.ru" target="_blank" rel="noreferrer" className={styles.link}>Journal</a>
               </p>
             </div>
           </div>

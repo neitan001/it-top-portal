@@ -1,9 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import styles from '@/styles/cloud/Personal.module.css';
 
 export default function Personal() {
+
     const router = useRouter();
     const [expandedSpaces, setExpandedSpaces] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -14,10 +17,25 @@ export default function Personal() {
     const [error, setError] = useState(null);
     const [files, setFiles] = useState([]);
 
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'swal',
+        },
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
     useEffect(() => {
         async function checkAuth() {
             try {
-                const res = await fetch('/api/auth/authenticate', {
+                const res = await fetch('/api/cloud/auth/authenticate', {
                     method: 'GET',
                     credentials: 'include',
                 });
@@ -44,24 +62,21 @@ export default function Personal() {
     const downloadFile = async (fileId, fileName) => {
         try {
 
-            const response = await fetch(`/api/files/${fileId}`);
+            const response = await fetch(`/api/cloud/files/${fileId}`);
 
             if (!response.ok) {
                 throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
             }
 
-            // Создаем blob из ответа
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
 
-            // Создаем временную ссылку для скачивания
             const a = document.createElement('a');
             a.href = url;
             a.download = fileName || `file-${fileId}`;
             document.body.appendChild(a);
             a.click();
 
-            // Очищаем
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch (error) {
@@ -72,13 +87,27 @@ export default function Personal() {
     };
 
     const deleteFile = async (fileId) => {
-        if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
-            return;
-        }
+        const result = await Swal.fire({
+            title: 'Удалить файл?',
+            text: 'Вы уверены, что хотите удалить этот файл?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Удалить',
+            cancelButtonText: 'Отмена',
+            customClass: {
+                popup: 'swal',
+                confirmButton: 'swal-delete-btn',
+                cancelButton: 'swal-btn'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
 
-            const response = await fetch(`/api/files/${fileId}`, {
+            const response = await fetch(`/api/cloud/files/${fileId}`, {
                 method: 'DELETE',
             });
 
@@ -86,18 +115,27 @@ export default function Personal() {
                 throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
             }
 
-            // Обновляем список файлов после удаления
             setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
-            alert('Файл успешно удален');
+            Toast.fire({
+                position: "top-end",
+                icon: 'success',
+                title: 'Успех!',
+                text: 'Файл успешно удалён',
+                timer: 2000,
+                showConfirmButton: false
+            });
         } catch (error) {
             console.error('Ошибка при удалении:', error);
-            alert('Не удалось удалить файл: ' + error.message);
+            Toast.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Не удалось удалить файл: ' + error.message
+            });
         } finally {
-    
+
         }
     };
 
-    // Функция для категоризации файлов
     const categorizeFiles = (files) => {
         const categories = {
             'Файлы': 0,
@@ -131,7 +169,6 @@ export default function Personal() {
         };
     };
 
-    // Загрузка данных файлов
     useEffect(() => {
         if (!isAuthenticated) return;
 
@@ -140,30 +177,15 @@ export default function Personal() {
             setError(null);
 
             try {
-                const res = await fetch('/api/files/get', {
+                const res = await fetch('/api/cloud/files/get', {
                     method: 'GET',
                     credentials: 'include'
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    const { categories, totalSize } = categorizeFiles(data.files);
 
                     setFiles(data.files);
-
-                    setFileStats(prev => ({
-                        totalFiles: data.files.length,
-                        categories: prev.categories.map(cat => ({
-                            ...cat,
-                            count: categories[cat.name] || 0
-                        }))
-                    }));
-
-                    setStorageStats(prev => ({
-                        ...prev,
-                        used: Math.round(totalSize / (1024 * 1024)), // Байты в MB
-                        free: prev.total - Math.round(totalSize / (1024 * 1024))
-                    }));
                 } else {
                     setError('Не удалось загрузить данные файлов');
                 }
@@ -198,7 +220,7 @@ export default function Personal() {
         formData.append('file', files[0]);
 
         try {
-            const res = await fetch('/api/files/upload', {
+            const res = await fetch('/api/cloud/files/upload', {
                 method: 'POST',
                 body: formData,
                 credentials: 'include',
@@ -206,7 +228,6 @@ export default function Personal() {
 
             if (res.ok) {
                 alert('Файл успешно загружен!');
-                // Обновляем данные после загрузки
                 window.location.reload();
             } else {
                 const errorData = await res.json();
@@ -220,7 +241,7 @@ export default function Personal() {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', {
+            await fetch('/api/cloud/auth/logout', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -233,7 +254,6 @@ export default function Personal() {
         }
     };
 
-    // Компоненты иконок остаются без изменений
     const Logo = () => (
         <svg width="81" height="41" viewBox="0 0 81 41" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M19.3261 27.8818L14.3314 37.0869L10.0527 20.0216L80.1005 1L19.3261 27.8818Z" fill="#C1C1C1" stroke="black" strokeLinejoin="round" />
@@ -301,143 +321,142 @@ export default function Personal() {
     );
 
     return (
-        <div className="dashboard-layout">
-            <nav className="dashboard-nav">
-                <div className="nav-header">
-                    <div className="logo-container-dashboard">
-                        <Logo />
-                    </div>
-                </div>
-
-                <ul className="nav-menu">
-                    <li className="nav-item">
-                        <Link href="/dashboard" legacyBehavior>
-                            <a>
-                                <HomeIcon />
-                                <span>Главная</span>
-                            </a>
-                        </Link>
-                    </li>
-
-                    <li className="nav-item">
-                        <a href="#">
-                            <SearchIcon />
-                            <span>Поиск</span>
-                        </a>
-                    </li>
-
-                    <div className="nav-divider"></div>
-
-                    <li className="nav-item nav-header-item">
-                        <a href="#" onClick={() => setExpandedSpaces(!expandedSpaces)}>
-                            <WorkspaceIcon />
-                            <span>Рабочие пространства</span>
-                            <ChevronIcon expanded={expandedSpaces} />
-                        </a>
-                    </li>
-
-                    {expandedSpaces && (
-                        <>
-                            <li className="nav-item active nav-subitem">
-                                <Link href="/personal" legacyBehavior>
-                                    <a>Личное</a>
-                                </Link>
-                            </li>
-                            <li className="nav-item nav-subitem">
-                                <Link href="/common" legacyBehavior>
-                                    <a>Общие файлы</a>
-                                </Link>
-                            </li>
-                        </>
-                    )}
-                </ul>
-
-                <div className="nav-footer">
-                    <a href="#" className="settings-link">
-                        <SettingsIcon />
-                        <span>Настройки</span>
-                    </a>
-                    <a href="#" className="logout-link" onClick={(e) => {
-                        e.preventDefault();
-                        handleLogout();
-                    }}>
-                        <LogoutIcon />
-                    </a>
-                </div>
-            </nav>
-
-            <main className="dashboard-content">
-                <div className="top-section">
-                    <div className="search-container">
-                        <div className="search-box">
-                            <SearchIcon />
-                            <input
-                                type="text"
-                                placeholder="Поиск файлов, документов..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="user-panel">
-                        <button onClick={handleUploadClick} className="upload-button">
-                            <UploadIcon />
-                            <span>Загрузить</span>
-                        </button>
-
-                        <input
-                            type="file"
-                            multiple
-                            style={{ display: 'none' }}
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                        />
-
-                        <div className="user-info">
-                            <span className="username">{userName}</span>
-                            <UserAvatar />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-8">
-                    <h2 className="section-title">Ваши файлы</h2>
-                    {files.length === 0 && !isLoading ? (
-                        <div className="empty-state">Файлы отсутствуют</div>
-                    ) : (
-                        <div className="files-grid">
-                            {files.map((file) => (
-                                <div key={file.id} className="file-card"> {/* Используем file.id как ключ */}
-                                    <p className="file-name" title={file.original_name}>
-                                        {file.original_name}
-                                    </p>
-                                    <p className="file-size">
-                                        {file.size > 1024 * 1024
-                                            ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-                                            : `${(file.size / 1024).toFixed(1)} KB`}
-                                    </p>
-                                    <div className="file-actions">
-                                        <button
-                                            onClick={() => downloadFile(file.id, file.original_name)}
-                                            className="download-button"
-                                        >
-                                            Скачать
-                                        </button>
-                                        <button
-                                            onClick={() => deleteFile(file.id)}
-                                            className="delete-button"
-                                        >
-                                            Удалить
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-            </main>
+  <div className={styles.dashboardLayout}>
+    <nav className={styles.dashboardNav}>
+      <div className={styles.navHeader}>
+        <div className={styles.logoContainerDashboard}>
+          <Logo />
         </div>
-    );
+      </div>
+
+      <ul className={styles.navMenu}>
+        <li className={styles.navItem}>
+          <Link href="/desktop/cloud/dashboard" legacyBehavior>
+            <a>
+              <HomeIcon />
+              <span>Главная</span>
+            </a>
+          </Link>
+        </li>
+
+        <li className={styles.navItem}>
+          <a href="#">
+            <SearchIcon />
+            <span>Поиск</span>
+          </a>
+        </li>
+
+        <div className={styles.navDivider}></div>
+
+        <li className={`${styles.navItem} ${styles.navHeaderItem}`}>
+          <a href="#" onClick={() => setExpandedSpaces(!expandedSpaces)}>
+            <WorkspaceIcon />
+            <span>Рабочие пространства</span>
+            <ChevronIcon expanded={expandedSpaces} />
+          </a>
+        </li>
+
+        {expandedSpaces && (
+          <>
+            <li className={`${styles.navItem} ${styles.navItemActive} ${styles.navSubitem}`}>
+              <Link href="/desktop/cloud/personal" legacyBehavior>
+                <a>Личное</a>
+              </Link>
+            </li>
+            <li className={`${styles.navItem} ${styles.navSubitem}`}>
+              <Link href="/desktop/cloud/common" legacyBehavior>
+                <a>Общие файлы</a>
+              </Link>
+            </li>
+          </>
+        )}
+      </ul>
+
+      <div className={styles.navFooter}>
+        <a href="#" className={styles.settingsLink}>
+          <SettingsIcon />
+          <span>Настройки</span>
+        </a>
+        <a href="#" className={styles.logoutLink} onClick={(e) => {
+          e.preventDefault();
+          handleLogout();
+        }}>
+          <LogoutIcon />
+        </a>
+      </div>
+    </nav>
+
+    <main className={styles.dashboardContent}>
+      <div className={styles.topSection}>
+        <div className={styles.searchContainer}>
+          <div className={styles.searchBox}>
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Поиск файлов, документов..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.userPanel}>
+          <button onClick={handleUploadClick} className={styles.uploadButton}>
+            <UploadIcon />
+            <span>Загрузить</span>
+          </button>
+
+          <input
+            type="file"
+            multiple
+            style={{ display: 'none' }}
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+
+          <div className={styles.userInfo}>
+            <span className={styles.username}>{userName}</span>
+            <UserAvatar />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.mt8}>
+        <h2 className={styles.sectionTitle}>Ваши файлы</h2>
+        {files.length === 0 && !isLoading ? (
+          <div className={styles.emptyState}>Файлы отсутствуют</div>
+        ) : (
+          <div className={styles.filesGrid}>
+            {files.map((file) => (
+              <div key={file.id} className={styles.fileCard}>
+                <p className={styles.fileName} title={file.original_name}>
+                  {file.original_name}
+                </p>
+                <p className={styles.fileSize}>
+                  {file.size > 1024 * 1024
+                    ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                    : `${(file.size / 1024).toFixed(1)} KB`}
+                </p>
+                <div className={styles.fileActions}>
+                  <button
+                    onClick={() => downloadFile(file.id, file.original_name)}
+                    className={styles.downloadButton}
+                  >
+                    Скачать
+                  </button>
+                  <button
+                    onClick={() => deleteFile(file.id)}
+                    className={styles.deleteButton}
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  </div>
+);
 }

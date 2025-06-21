@@ -7,19 +7,36 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 10000,
+  idleTimeout: 60000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000
 });
 
-export async function getConnection() {
-  return await pool.getConnection();
-}
+pool.getConnection()
+  .then(conn => {
+    console.log('Successfully connected to the database');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('Database connection failed:', err);
+  });
 
-export async function query(sql, params) {
-  const connection = await pool.getConnection();
-  try {
-    const [rows] = await connection.execute(sql, params);
-    return rows;
-  } finally {
-    connection.release();
-  }
-}
+pool.on('acquire', connection => {
+  console.log('Connection %d acquired', connection.threadId);
+});
+
+pool.on('release', connection => {
+  console.log('Connection %d released', connection.threadId);
+});
+
+pool.on('enqueue', () => {
+  console.log('Waiting for available connection slot');
+});
+
+pool.on('error', err => {
+  console.error('Pool error:', err);
+});
+
+export const db = pool;

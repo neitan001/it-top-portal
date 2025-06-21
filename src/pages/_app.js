@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Script from "next/script";
 
-import logger from '../lib/logger';
+import logger from '@/lib/logger';
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();

@@ -1,0 +1,346 @@
+/* Dashboard.module.css */
+
+.dashboardLayout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #000000 0%, #1a1a1a 100%);
+  color: #ffffff;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.dashboardNav {
+  width: 240px;
+  background-color: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 20px);
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  border-radius: 16px;
+  box-shadow: 4px 4px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  padding: 20px 0;
+  overflow: hidden;
+}
+
+.navHeader {
+  padding: 0 20px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.navMenu {
+  list-style: none;
+  padding: 0 15px;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.navItem {
+  margin: 4px 0;
+}
+
+.navItem a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.navItem a:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  transform: translateX(2px);
+}
+
+.navItemActive {
+  background-color: rgba(243, 43, 59, 0.2);
+  color: #f32b3b;
+  font-weight: 600;
+}
+
+.navItemActive a:hover {
+  background-color: rgba(243, 43, 59, 0.25);
+}
+
+.navDivider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 15px 20px;
+}
+
+.navHeaderItem {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.navHeaderItem a {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 500 !important;
+}
+
+.navSubitem {
+  margin-left: 20px;
+}
+
+.navSubitem a {
+  padding-left: 40px !important;
+  font-size: 0.8rem !important;
+}
+
+.navFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 10px;
+}
+
+.settingsLink, 
+.logoutLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.settingsLink:hover, 
+.logoutLink:hover {
+  color: #f32b3b;
+}
+
+.logoutLink {
+  padding: 8px;
+  border-radius: 50%;
+  background-color: rgba(243, 43, 59, 0.1);
+}
+
+.dashboardContent {
+  margin-left: 220px;
+  flex-grow: 1;
+  padding: 30px 40px;
+  min-height: 100vh;
+}
+
+.topSection {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.searchContainer {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 800px;
+  margin-right: 20px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  width: 80%;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.searchBox:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.searchBox svg {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  opacity: 0.7;
+}
+
+.searchBox input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  outline: none;
+}
+
+.searchBox input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.userPanel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 40px;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.uploadButton {
+  margin: 0;
+  height: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(243, 43, 59, 0.1);
+  color: #F32B3B;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadButton:hover {
+  background-color: rgba(243, 43, 59, 0.2);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #F32B3B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  margin-left: 10px;
+  position: relative; 
+}
+
+.filesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.fileCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s ease-out;
+  color: white;
+  max-width: 100%;
+  margin: 0;
+}
+
+.fileCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.fileName {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileSize {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.emptyState {
+  color: rgba(255, 255, 255, 0.6);
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fileActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.downloadButton {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.downloadButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.deleteButton {
+  padding: 6px 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+}
+
+.mt8 {
+  margin-top: 2rem;
+}
