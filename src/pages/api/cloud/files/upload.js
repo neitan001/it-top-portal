@@ -148,10 +148,11 @@ export default async function handler(req, res) {
       await db.execute(sql, params);
       return res.status(201).json({
         success: true,
+        original_name: originalNameFixed,
         message: 'Файл успешно загружен',
         filename: req.file.filename,
         size: req.file.size,
-        mimeType: req.file.mimetype
+        mime_Type: req.file.mimetype
       });
     } catch (error) {
       try {

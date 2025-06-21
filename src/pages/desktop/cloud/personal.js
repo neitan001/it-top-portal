@@ -16,21 +16,49 @@ export default function Personal() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [files, setFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
 
-    const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'swal',
-        },
-        didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-        }
-    });
+    const originalSwalFire = Swal.fire.bind(Swal);
+
+
+Swal.fire = function(config) {
+  const darkTheme = {
+    background: '#1a1a1a',
+    color: 'white',
+    confirmButtonColor: '#F32B3B',
+    cancelButtonColor: '#333',
+    iconColor: '#F32B3B',
+    customClass: {
+      popup: 'swal-dark',
+      confirmButton: 'swal-dark-confirm',
+      cancelButton: 'swal-dark-cancel'
+    }
+  };
+  
+  return originalSwalFire({
+    ...darkTheme,
+    ...config
+  });
+};
+
+// Toast-уведомления
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  width: '380px',
+  padding:'0.8rem',
+  background: '#1a1a1a',
+  color: 'white',
+  iconColor: '#F32B3B',
+  timer: 3000,
+  timerProgressBar: true,
+  showConfirmButton: false,
+  didOpen: (toast) => {
+    toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
+    toast.style.borderRadius = '8px';
+  }
+});
+Swal.fire = Toast.fire;
 
     useEffect(() => {
         async function checkAuth() {
@@ -86,55 +114,47 @@ export default function Personal() {
         }
     };
 
-    const deleteFile = async (fileId) => {
-        const result = await Swal.fire({
-            title: 'Удалить файл?',
-            text: 'Вы уверены, что хотите удалить этот файл?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Удалить',
-            cancelButtonText: 'Отмена',
-            customClass: {
-                popup: 'swal',
-                confirmButton: 'swal-delete-btn',
-                cancelButton: 'swal-btn'
-            }
-        });
+      const deleteFile = async (fileId) => {
+          const result = await Swal.fire({
+              title: 'Удалить файл?',
+              text: 'Вы уверены, что хотите удалить этот файл?',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Удалить',
+              cancelButtonText: 'Отмена',
+              customClass: {
+              popup: 'swal-dark',
+              confirmButton: 'swal-dark-confirm',
+              cancelButton: 'swal-dark-cancel',
+              timer: undefined
+              }
+          });
 
-        if (!result.isConfirmed) return;
+          if (!result.isConfirmed) return;
 
-        try {
+          try {
+              const response = await fetch(`/api/cloud/files/${fileId}`, {
+                  method: 'DELETE',
+              });
 
-            const response = await fetch(`/api/cloud/files/${fileId}`, {
-                method: 'DELETE',
-            });
+              if (!response.ok) {
+                  throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+              }
 
-            if (!response.ok) {
-                throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-            }
-
-            setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
-            Toast.fire({
-                position: "top-end",
-                icon: 'success',
-                title: 'Успех!',
-                text: 'Файл успешно удалён',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } catch (error) {
-            console.error('Ошибка при удалении:', error);
-            Toast.fire({
-                icon: 'error',
-                title: 'Ошибка',
-                text: 'Не удалось удалить файл: ' + error.message
-            });
-        } finally {
-
-        }
-    };
+              setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+              Toast.fire({
+                  icon: 'success',
+                  title: 'Файл успешно удалён',
+                  timer: 2000
+              });
+          } catch (error) {
+              Toast.fire({
+                  icon: 'error',
+                  title: 'Ошибка',
+                  text: 'Не удалось удалить файл: ' + error.message
+              });
+          }
+      };
 
     const categorizeFiles = (files) => {
         const categories = {
@@ -167,6 +187,30 @@ export default function Personal() {
             categories,
             totalSize
         };
+    };
+
+            
+    const handleDragEnter = (e) => { // функция drag n drop
+      e.preventDefault();
+      setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+      setIsDragging(false);
+    };
+
+    const handleDragOver = (e) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        const mockEvent = { target: { files } };
+        handleFileChange(mockEvent);
+      }
     };
 
     useEffect(() => {
@@ -227,18 +271,34 @@ export default function Personal() {
             });
 
             if (res.ok) {
-                alert('Файл успешно загружен!');
-                window.location.reload();
-            } else {
-                const errorData = await res.json();
-                alert(errorData.error || 'Ошибка при загрузке файла');
+            Toast.fire({
+              icon: 'success',
+              title: 'Успех!',
+          });
+          window.location.reload();
+      } 
+            else {
+            const errorData = await res.json();
+            Toast.fire({
+              icon: 'error',
+              title: 'Ошибка',
+              text: errorData.error || 'Не удалось загрузить файл',
+            });
             }
         } catch (error) {
-            alert('Ошибка сети');
+            Toast.fire({
+              position: "top-end",
+              icon: 'error',
+              title: 'Ошибка',
+              text: 'Ошибка сети при загрузке файла',
+              timer: 2000,
+              showConfirmButton: false,
+              toast:true,
+              width: '380px'
+            });
             console.error(error);
         }
     };
-
     const handleLogout = async () => {
         try {
             await fetch('/api/cloud/auth/logout', {
@@ -422,6 +482,19 @@ export default function Personal() {
       </div>
 
       <div className={styles.mt8}>
+        
+        <div // функция drag n drop
+          className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <UploadIcon />
+          <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
+          <small>или нажмите &apos;Загрузить&apos; выше</small>
+        </div>
+
         <h2 className={styles.sectionTitle}>Ваши файлы</h2>
         {files.length === 0 && !isLoading ? (
           <div className={styles.emptyState}>Файлы отсутствуют</div>

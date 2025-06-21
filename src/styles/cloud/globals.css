@@ -23,3 +23,30 @@ html, body, #__next, .app-container {
 .app-main {
   flex-grow: 1;
 }
+
+/* SweetAlert Dark Theme */
+.swal-dark {
+  border: 1px solid rgba(243, 43, 59, 0.3) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+.swal-dark-confirm {
+  background: #F32B3B !important;
+  transition: all 0.3s !important;
+}
+.swal-dark-confirm:hover {
+  background: #d62535 !important;
+  transform: translateY(-1px) !important;
+}
+
+.swal-dark-cancel {
+  background: #333 !important;
+  color: white !important;
+}
+.swal-dark-cancel:hover {
+  background: #444 !important;
+}
+
+.swal2-timer-progress-bar {
+  background: rgba(243, 43, 59, 0.5) !important;
+}

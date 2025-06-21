@@ -206,14 +206,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(243, 43, 59, 0.1);
-  color: #F32B3B;
-  border-radius: 6px;
-  padding: 8px 16px;
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ffffff;
+  border:1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  padding: 8px 14px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.5s ease;
 }
 
 .uploadButton:hover {
@@ -326,6 +327,30 @@
   box-shadow: none;
 }
 
+.dropZone {
+  border: 2px dashed #F32B3B;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dropZone:hover,
+.dragging {
+  background: rgba(243, 43, 59, 0.1);
+}
+
+.dropZone p {
+  margin: 10px 0 5px;
+  font-weight: 500;
+}
+
+.dropZone small {
+  color: #888;
+}
+
 .deleteButton {
   padding: 6px 12px;
   background-color: #f44336;
@@ -343,4 +368,90 @@
 
 .mt8 {
   margin-top: 2rem;
+}
+
+/* SweetAlert Dark Theme */
+.swal-dark {
+  width: auto !important;
+  max-width: 400px !important;
+  padding: 1.5rem !important;
+  border-radius: 12px !important;
+}
+.swal-dark-confirm {
+  padding: 0.5rem 1.5rem !important;
+  margin-right: 10px !important;
+}
+.swal-dark-confirm:hover {
+  background: #d62535 !important;
+}
+
+.swal-dark-cancel {
+  padding: 0.5rem 1.5rem !important;
+}
+.swal-dark-cancel:hover {
+  background: #444 !important;
+}
+
+.swal2-timer-progress-bar {
+  background: rgba(243, 43, 59, 0.5) !important;
+}
+
+/* Стили для Toast-уведомлений */
+.swal2-toast {
+  width: 380px !important;
+  min-height: 60px !important;
+  padding: 0.8rem !important;
+  font-size: 14px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
+  align-items: center !important;
+}
+
+.swal2-toast .swal2-icon {
+  width: 28px !important;
+  height: 28px !important;
+  margin-right: 12px !important;
+}
+
+.swal2-toast .swal2-title {
+  font-size: 14px !important;
+  margin: 0 !important;
+  flex-grow: 1 !important;
+}
+
+/* Базовые стили для всех уведомлений */
+.swal2-popup {
+  width: 380px !important;
+  padding: 0.8rem !important;
+  border-radius: 8px !important;
+  background: #1a1a1a !important;
+  border: 1px solid rgba(243, 43, 59, 0.3) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Заголовок и текст */
+.swal2-title, .swal2-html-container {
+  color: white !important;
+  text-align: left !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Иконки */
+.swal2-icon {
+  margin: 0 10px 0 0 !important;
+}
+
+/* Кнопки */
+.swal2-styled {
+  padding: 0.4rem 1.2rem !important;
+  font-size: 0.85rem !important;
+}
+
+.swal2-confirm {
+  background: #F32B3B !important;
+}
+
+.swal2-cancel {
+  background: #333 !important;
+  color: white !important;
 }

@@ -209,7 +209,7 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
@@ -254,13 +254,14 @@
   align-items: center;
   gap: 8px;
   background-color: rgba(243, 43, 59, 0.1);
-  color: #F32B3B;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .uploadButton:hover {
