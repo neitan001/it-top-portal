@@ -17,9 +17,24 @@ export default function Personal() {
     const [error, setError] = useState(null);
     const [files, setFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
-
+    const [selectedFiles, setSelectedFiles] = useState(new Set());
     const originalSwalFire = Swal.fire.bind(Swal);
+    const [showBulkActions, setShowBulkActions] = useState(false);
+    const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
+useEffect(() => {
+  if (selectedFiles.size > 0) {
+    setShowBulkActions(true);
+    setIsAnimatingOut(false);
+  } else if (showBulkActions) {
+    setIsAnimatingOut(true);
+    const timer = setTimeout(() => {
+      setShowBulkActions(false);
+      setIsAnimatingOut(false);
+    }, 300); // Должно совпадать с временем transition в CSS
+    return () => clearTimeout(timer);
+  }
+}, [selectedFiles, showBulkActions]);
 
 Swal.fire = function(config) {
   const darkTheme = {
@@ -202,6 +217,12 @@ Swal.fire = Toast.fire;
 
     const handleDragOver = (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      if (!e.dataTransfer.types.includes('Files')) {
+        e.dataTransfer.dropEffect = 'none';
+      } else {
+        e.dataTransfer.dropEffect = 'copy';
+      }
     };
     
 const handleFilesUpload = useCallback(async (formData) => {
@@ -350,6 +371,85 @@ const handleFilesUpload = useCallback(async (formData) => {
             console.error('Logout error:', error);
         }
     };
+
+    const toggleFileSelection = (fileId) => {
+  setSelectedFiles(prev => {
+    const newSelection = new Set(prev);
+    if (newSelection.has(fileId)) {
+      newSelection.delete(fileId);
+    } else {
+      newSelection.add(fileId);
+    }
+    return newSelection;
+  });
+};
+const selectedCount = Object.keys(selectedFiles).length;
+
+const handleBulkDownload = async () => {
+  if (selectedFiles.size === 0) return;
+
+  try {
+    // Для каждого выбранного файла создаем скрытую ссылку и кликаем по ней
+    Array.from(selectedFiles).forEach(async fileId => {
+      const file = files.find(f => f.id === fileId);
+      if (file) {
+        await downloadFile(file.id, file.original_name);
+      }
+    });
+
+    Toast.fire({
+      icon: 'success',
+      title: `Начато скачивание ${selectedFiles.size} файлов`
+    });
+  } catch (error) {
+    Toast.fire({
+      icon: 'error',
+      title: 'Ошибка',
+      text: 'Не удалось скачать выбранные файлы'
+    });
+  }
+};
+
+const handleBulkDelete = async () => {
+  if (selectedFiles.size === 0) return;
+
+  const result = await Swal.fire({
+    title: 'Удалить выбранные файлы?',
+    text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Удалить',
+    cancelButtonText: 'Отмена',
+    customClass: {
+      popup: 'swal-dark',
+      confirmButton: 'swal-dark-confirm',
+      cancelButton: 'swal-dark-cancel'
+    }
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const deletePromises = Array.from(selectedFiles).map(fileId => 
+      fetch(`/api/cloud/files/${fileId}`, { method: 'DELETE' })
+    );
+
+    await Promise.all(deletePromises);
+    setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
+    setSelectedFiles(new Set());
+    
+    Toast.fire({
+      icon: 'success',
+      title: `Удалено ${selectedFiles.size} файлов`
+    });
+  } catch (error) {
+    Toast.fire({
+      icon: 'error',
+      title: 'Ошибка',
+      text: 'Не удалось удалить выбранные файлы'
+    });
+  }
+};
 
     const Logo = () => (
         <svg width="81" height="41" viewBox="0 0 81 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -519,52 +619,76 @@ const handleFilesUpload = useCallback(async (formData) => {
       </div>
 
       <div className={styles.mt8}>
-        
-        <div // функция drag n drop
-          className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+        <div className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
+          onDrop={handleDrop}>
           <UploadIcon />
           <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
           <small>или нажмите &apos;Загрузить&apos; выше</small>
         </div>
 
-        <h2 className={styles.sectionTitle}>Ваши файлы</h2>
-        {files.length === 0 && !isLoading ? (
-          <div className={styles.emptyState}>Файлы отсутствуют</div>
-        ) : (
-          <div className={styles.filesGrid}>
-            {files.map((file) => (
-              <div key={file.id} className={styles.fileCard}>
-                <p className={styles.fileName} title={file.original_name}>
-                  {file.original_name}
-                </p>
-                <p className={styles.fileSize}>
-                  {file.size > 1024 * 1024
-                    ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-                    : `${(file.size / 1024).toFixed(1)} KB`}
-                </p>
-                <div className={styles.fileActions}>
-                  <button
-                    onClick={() => downloadFile(file.id, file.original_name)}
-                    className={styles.downloadButton}
-                  >
-                    Скачать
-                  </button>
-                  <button
-                    onClick={() => deleteFile(file.id)}
-                    className={styles.deleteButton}
-                  >
-                    Удалить
-                  </button>
+        {selectedFiles.size > 0 ? (
+  <div className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''}`}>
+  <button 
+    onClick={handleBulkDownload}
+    className={styles.bulkButton}
+  >
+    Скачать выбранные ({selectedFiles.size})
+  </button>
+  <button 
+    onClick={handleBulkDelete}
+    className={styles.bulkButton}
+  >
+    Удалить выбранные ({selectedFiles.size})
+  </button>
+  <button 
+    onClick={() => setSelectedFiles(new Set())}
+    className={styles.bulkButton}
+  >
+    Сбросить выбор
+  </button>
+</div>
+) : null}
+
+        <div className={styles.filesContainer}>
+          <h2 className={styles.sectionTitle}>Ваши файлы</h2>
+          {files.length === 0 && !isLoading ? (
+            <div className={styles.emptyState}>Файлы отсутствуют</div>
+          ) : (
+            <div className={styles.filesGrid}>
+              {files.map((file) => (
+                <div 
+                  key={file.id}
+                  className={`${styles.fileCard} ${selectedFiles.has(file.id) ? styles.selected : ''}`}
+                  onClick={() => toggleFileSelection(file.id)}
+                >
+                  <p className={styles.fileName}>{file.original_name}</p>
+                  <p className={styles.fileSize}>
+                    {file.size > 1024 * 1024
+                      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                      : `${(file.size / 1024).toFixed(1)} KB`}
+                  </p>
+                  <div className={styles.fileActions}>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      downloadFile(file.id, file.original_name);
+                    }} className={styles.downloadButton}>
+                      Скачать
+                    </button>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      deleteFile(file.id);
+                    }} className={styles.deleteButton}>
+                      Удалить
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   </div>

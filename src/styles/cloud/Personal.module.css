@@ -468,3 +468,88 @@
   background: #333 !important;
   color: white !important;
 }
+
+.fileCard {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fileCard.selected {
+  background-color: rgba(243, 43, 59, 0.1);
+  border: 1px solid #F32B3B;
+}
+
+.bulkActions {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: 
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out,
+    padding 0.3s ease-in-out,
+    margin 0.3s ease-in-out;
+  padding: 0;
+  margin: 0 0 0 0;
+  will-change: transform, opacity, max-height;
+}
+
+.bulkButton {
+  padding: 8px 16px;
+  background: rgba(243, 43, 59, 0.2);
+  color: white;
+  border: 1px solid #F32B3B;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.6s;
+}
+
+.bulkButton:hover {
+  background: rgba(243, 43, 59, 0.3);
+}
+
+.bulkActions.show {
+  max-height: 100px;
+  opacity: 1;
+  transform: translateY(0);
+  padding: 10px;
+  margin: 0 0 16px 0;
+}
+
+.filesContainer {
+  transition: margin-top 0.3s ease-in-out;
+}
+
+.fileCard {
+  transition: all 0.2s ease;
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+}
+
+.fileCard.selected {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(243, 43, 59, 0.2);
+}
+
+.fileCard:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1.02); }
+}
