@@ -1,5 +1,5 @@
-import { prismaMiniApp } from '../../lib/prisma/mini-app';
-const { encryptPassword } = require('../../lib/crypto');
+import { prismaMiniApp } from '../../../../lib/prisma/mini-app';
+const { encryptPassword } = require('../../../../lib/mini-app/crypto');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
