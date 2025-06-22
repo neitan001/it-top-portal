@@ -149,20 +149,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
-  width: 800px;
-  margin-right: 20px;
+  height: 100%;
+  width: 600px;
+  margin: 0 auto;         /* Автоматические отступы по бокам */
+  padding: 0 20px;  
 }
 
 .searchBox {
   display: flex;
   align-items: center;
-  width: 80%;
+  width: 100%;
   max-width: 800px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 24px;
+  border: 0.1px solid #f32b3b !important;
+  box-shadow: 0px 0px 17px rgba(243, 43, 59, 0.4) !important;
   padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 

@@ -2,7 +2,6 @@ import '../styles/globals.css';
 import '../styles/index.css';
 import '../styles/dashboard.css';
 import '../styles/personal.css';
-import '../styles/swal-theme.css';
 
 export default function App({ Component, pageProps }) {
   return (
