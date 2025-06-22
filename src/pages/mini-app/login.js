@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import styles from '@/styles/mini-app/Login.module.css';
 import { useAuthLogic } from '@/lib/mini-app/authLogic';
-import useTelegramAuth from '@/hooks/useTelegramAuth';
+import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
 
 export default function LoginPage() {
   const { tgId, isLoading, isTelegram } = useTelegramAuth();
