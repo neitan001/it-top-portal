@@ -19,10 +19,19 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-      
-      - name: Debug GithHub
+
+      - name: Check SSH variables
+        run: |
+          echo "SERVER_IP: ${{ secrets.SERVER_IP }}"
+          echo "SERVER_USER: ${{ secrets.SERVER_USER }}"
+
+      - name: Debug GitHub Actions IP
         run: |
           echo "GitHub Actions IP: $(curl -s ifconfig.me)"
+
+      - name: Test SSH connection
+        run: |
+          ssh -vvv -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH connection successful'"
 
       - name: Deploy over SSH
         run: |
