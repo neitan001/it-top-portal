@@ -29,13 +29,9 @@ jobs:
         run: |
           echo "GitHub Actions IP: $(curl -s ifconfig.me)"
 
-      - name: Test SSH connection
-        run: |
-          ssh -vvv -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH connection successful'"
-
       - name: Deploy over SSH
         run: |
-          ssh -vvv -tt ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          ssh -vvv -tt -oHostKeyAlgorithms=+ssh-ed25519 -oKexAlgorithms=+curve25519-sha256 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             set -e
             cd ~/apps/nextjs-app || exit
             echo "Pulling latest changes..."
