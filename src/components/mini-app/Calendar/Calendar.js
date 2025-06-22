@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import styles from './Calendar.module.css';
 
-const Calendar = () => {
+const Calendar = ({ tgId }) => {
     const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const weekdays = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'];
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -58,13 +58,19 @@ const Calendar = () => {
     };
 
     const fetchSchedule = async (date) => {
-        const formattedDate = date.toISOString().split('T')[0];
+        const formattedDate = date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0');
         setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch(`/api/get_schedule?date=${formattedDate}`);
-            if (!response.ok) throw new Error('Ошибка при получении расписания');
+            const response = await fetch(`/api/mini-app/parsers/get_schedule?date=${formattedDate}`, {
+                headers: {
+                    'X-Telegram-ID': tgId,
+                },
+            });
+            if (!response.ok) return; //throw new Error('Ошибка при получении расписания'); - это тут было но вызыво падение (переделаю потом на красивое сообщение в UI)
             const data = await response.json();
 
             if (Array.isArray(data.schedule) && data.schedule.length > 0) {
@@ -222,19 +228,11 @@ const Calendar = () => {
     };
 
     useEffect(() => {
-        if (isFirstRender) {
-            fetchSchedule(new Date());
-            setIsFirstRender(false);
-        }
-    }, [isFirstRender]);
-
-    useEffect(() => {
-        if (!isFirstRender) {
-            const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentSelectedDay);
-            setSelectedDate(newDate);
-            fetchSchedule(newDate);
-        }
-    }, [currentDate, currentSelectedDay]);
+        const today = new Date();
+        setSelectedDate(today);
+        setCurrentSelectedDay(today.getDate());
+        fetchSchedule(today);
+    }, []);
 
     return (
         <>

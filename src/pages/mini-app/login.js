@@ -1,9 +1,15 @@
 import Head from 'next/head';
-import styles from '@/styles/Login.module.css';
+import styles from '@/styles/mini-app/Login.module.css';
 import { useAuthLogic } from '@/lib/mini-app/authLogic';
+import useTelegramAuth from '@/hooks/useTelegramAuth';
 
-export default function LoginPage({ tg_id }) {
-  const { message, handleSubmit } = useAuthLogic(tg_id);
+export default function LoginPage() {
+  const { tgId, isLoading, isTelegram } = useTelegramAuth();
+
+  const { message, handleSubmit } = useAuthLogic(tgId);
+
+  if (isLoading) return <p>Загрузка...</p>;
+  if (!isTelegram) return <p>Откройте это в Telegram WebApp</p>;
 
   return (
     <>

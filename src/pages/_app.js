@@ -1,13 +1,8 @@
 import "@/styles/globals.css";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useEffect } from "react";
 import Script from "next/script";
 
-import logger from '../lib/logger';
-
 export default function App({ Component, pageProps }) {
-  const router = useRouter();
-  const [tgId, setTgId] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -47,66 +42,12 @@ export default function App({ Component, pageProps }) {
           document.removeEventListener('contextmenu', blockContextMenu);
         };
       }
-
-      const verifyTgAuth = async () => {
-        try {
-          if (!router.pathname.startsWith("/mini-app/")) return;
-
-          const tgWebApp = window.Telegram?.WebApp;
-          if (!tgWebApp) return;
-
-          tgWebApp.expand?.();
-
-          const userId = tgWebApp.initDataUnsafe?.user?.id;
-
-          if (process.env.NODE_ENV === "development") {
-            const devUserId = userId || 721135016;
-            console.log(`Development mode: используется tg_id ${devUserId} в обход валидации`);
-            setTgId(devUserId);
-            return;
-          }
-
-          const initData = tgWebApp.initData;
-          if (!userId || !initData) {
-            logger.info('userId или initData не найдены!');
-            return;
-          }
-
-          const res = await fetch("/api/mini-app/auth/validate-tg", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ initData }),
-          });
-
-          if (!res.ok) {
-            const text = await res.text();
-            logger.error(`Ошибка API: статус ${res.status}, тело: ${text}`);
-            return;
-          }
-
-          const data = await res.json();
-
-          if (res.ok && data.valid) {
-            setTgId(userId);
-          } else {
-            logger.info('Не валидный');
-          }
-        } catch (error) {
-          logger.error('Ошибка в verifyTgAuth:', error);
-        }
-      };
-
-      verifyTgAuth();
     }
-  }, [router.pathname]);
+  }, []);
 
   return (
     <>
-      <Script
-        src="https://telegram.org/js/telegram-web-app.js"
-        strategy="beforeInteractive"
-      />
-      <Component {...pageProps} tg_id={tgId} />
+      <Component {...pageProps} />
     </>
   );
 }

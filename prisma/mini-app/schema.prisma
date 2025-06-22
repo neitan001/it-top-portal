@@ -1,0 +1,33 @@
+/// ЕСЛИ ЧТО-ТО МЕНЯЕТСЯ В ЭТОМ ФАЙЛЕ
+/// НУЖНО ПРОПИСАТЬ КОМАНДУ В КОРНЕ ПРОЕКТА:
+///
+///     npx prisma generate --schema=prisma/mini-app/schema.prisma
+///
+/// ЭТА КОМАНДА ГЕНЕРИРУЕТ TypeScript-клиент для работы с БД на основе schema.prisma.
+///
+///
+/// НА СЕРВЕРЕ ПОСЛЕ УСТАНОВКИ ТОЖЕ НАДО ПРОПИСАТЬ,
+/// ЧТОБЫ СГЕНЕРИРОВАТЬ/ПЕРЕГЕНЕРИРОВАТЬ КЛИЕНТ ДЛЯ ТЕКУЩЕЙ СХЕМЫ.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../prisma/generated/mini-app"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_MINI_APP")
+}
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  login      String
+  password   String
+  token      String?
+  tg_id      String?   @unique
+  group_name String?
+  theme      String    @default("dark")
+  last_visit DateTime?
+
+  @@map("users")
+}
