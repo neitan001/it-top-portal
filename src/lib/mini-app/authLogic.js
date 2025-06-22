@@ -27,6 +27,7 @@ export function useAuthLogic(tg_id) {
         body: JSON.stringify({
           login,
           password,
+          tg_id
         })
       });
 

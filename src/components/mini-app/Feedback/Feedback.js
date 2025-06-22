@@ -9,7 +9,7 @@ export default function Feedback() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/get_feedback');
+                const res = await fetch('/api/mini_app/parsers/get_feedback');
                 if (!res.ok) throw new Error('Ошибка загрузки');
                 setFeedbacks(await res.json());
             } catch (err) {

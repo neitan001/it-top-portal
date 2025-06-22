@@ -16,7 +16,7 @@ export default function Grades() {
       try {
         setLoading(true);
         setError(null);
-        const resp = await fetch('/api/get_grades');
+        const resp = await fetch('/api/mini_app/parsers/get_grades');
         if (!resp.ok) throw new Error('Ошибка при получении данных');
         const data = await resp.json();
         setAllGrades(data);
