@@ -19,6 +19,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Debug GithHub
+        run: |
+          echo "GitHub Actions IP: $(curl -s ifconfig.me)"
 
       - name: Deploy over SSH
         run: |
