@@ -334,7 +334,30 @@
   text-align: center;
   margin-bottom: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: 
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+  position: relative;
+  height: 140px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.dropZone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+  min-height: 120px;
 }
 
 .dropZone:hover,
@@ -342,19 +365,27 @@
   background: rgba(243, 43, 59, 0.1);
 }
 
-.dropZone p {
-  margin: 10px 0 5px;
-  font-weight: 500;
-}
-
+.dropZone p, 
 .dropZone small {
-  color: #888;
+  transition: transform 0.2s ease;
+  position: relative;
+  z-index: 2;
 }
 
 .dropZone.dragging {
+  border-color: #F32B3B;
   background: rgba(243, 43, 59, 0.1);
-  border: 2px dashed #F32B3B;
 }
+
+.dropZone.dragging p {
+  transform: translateY(-5px); /* Лёгкое смещение вместо изменения размера */
+}
+
+.dropZone.dragging::before {
+  border-color: #ffffff00; /* оставлю, мб чет придумаю*/
+  min-height: 120px;
+}
+
 
 .dropZone.dragging::after {
   content: 'Отпустите для загрузки ' attr(data-count) ' файлов';
@@ -362,7 +393,10 @@
   margin-top: 10px;
   font-size: 14px;
   color: #F32B3B;
+  position: relative;
+  z-index: 2;
 }
+
 
 .deleteButton {
   padding: 6px 12px;

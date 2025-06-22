@@ -206,23 +206,22 @@ Swal.fire = Toast.fire;
     };
 
             
-    const handleDragEnter = (e) => { // функция drag n drop
+    const handleDragEnter = (e) => {
       e.preventDefault();
-      setIsDragging(true);
+      if (!isDragging && e.dataTransfer.types.includes('Files')) {
+        setIsDragging(true);
+      }
     };
 
-    const handleDragLeave = () => {
-      setIsDragging(false);
+    const handleDragLeave = (e) => {
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        setIsDragging(false);
+      }
     };
 
     const handleDragOver = (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      if (!e.dataTransfer.types.includes('Files')) {
-        e.dataTransfer.dropEffect = 'none';
-      } else {
-        e.dataTransfer.dropEffect = 'copy';
-      }
+      e.dataTransfer.dropEffect = 'copy';
     };
     
 const handleFilesUpload = useCallback(async (formData) => {
@@ -619,11 +618,13 @@ const handleBulkDelete = async () => {
       </div>
 
       <div className={styles.mt8}>
-        <div className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+        <div 
+          className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleDrop}>
+          onDrop={handleDrop}
+          >
           <UploadIcon />
           <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
           <small>или нажмите &apos;Загрузить&apos; выше</small>
