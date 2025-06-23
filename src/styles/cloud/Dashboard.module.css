@@ -49,9 +49,7 @@
   z-index: 100;
   padding: 20px 0;
   overflow: hidden;
-  transform: translateX(-260px);
   transition: transform 0.4s ease-out;
-  animation: slideIn 0.4s ease-out forwards;
 }
 
 .navHeader {
@@ -209,10 +207,16 @@
   max-width: 800px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  border: 0.1px solid #f32b3b !important;
-  box-shadow: 0px 0px 17px rgba(243, 43, 59, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1) !important;
   padding: 10px 20px;
   transition: all 0.3s ease;
+}
+
+.searchBox:focus-within {
+  border-color: rgba(243, 43, 59, 0.5)!important; /* Полупрозрачный красный */
+  box-shadow: 0px 0px 0px 5px rgba(243, 43, 60, 0.05)!important; /* Мягкое свечение */
+  outline: none; /* Убираем стандартный outline */
 }
 
 .searchBox:hover {
@@ -257,18 +261,21 @@
   gap: 8px;
   background-color: rgba(243, 43, 59, 0.1);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border: 1px solid rgba(243, 43, 59, 0.5);
+  border-radius: 7px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.5s ease;
 }
 
 .uploadButton:hover {
   background-color: rgba(243, 43, 59, 0.2);
+  box-shadow: 0px 0px 0px 1.5px rgba(243, 43, 59, 0.5)!important; /* Мягкое свечение */
+  border-radius: 8px;
 }
+
 
 .userInfo {
   display: flex;
@@ -374,8 +381,9 @@
 .uploadButton,
 .userAvatar,
 .categoryItem,
-.storageBar {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.storageBar,
+.storageItem:hover{
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .categoryItem:hover {
@@ -386,33 +394,4 @@
 .storageItem:hover {
   transform: translateX(5px);
   color: white;
-}
-
-@media (max-width: 768px) {
-  .dashboardNav {
-    width: 70px;
-    overflow: hidden;
-  }
-  
-  .dashboardNav:hover {
-    width: 220px;
-  }
-  
-  .navHeader h2 span,
-  .navItem a span {
-    display: none;
-  }
-  
-  .dashboardNav:hover .navHeader h2 span,
-  .dashboardNav:hover .navItem a span {
-    display: inline;
-  }
-  
-  .dashboardContent {
-    margin-left: 70px;
-  }
-  
-  .dashboardNav:hover ~ .dashboardContent {
-    margin-left: 220px;
-  }
 }
