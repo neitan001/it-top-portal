@@ -1,20 +1,30 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
+import TelegramProvider from '@/components/mini-app/TelegramProvider/TelegramProvider';
 
-export default function MiniAppLoader() {
+export default function MiniAppLoaderPage() {
+  return (
+    <TelegramProvider>
+      <MiniAppLoader />
+    </TelegramProvider>
+  );
+}
+
+function MiniAppLoader() {
   const router = useRouter();
+  const { isLoading, isTelegram } = useTelegramAuth();
 
   useEffect(() => {
-    const tgId = localStorage.getItem('tg_id');
+    const storedTgId = localStorage.getItem('tg_id');
 
-    if (tgId) {
+    if (storedTgId) {
       router.replace('/mini-app/dashboard');
-    } else {
-      router.replace('/mini-app/login');
+      return;
     }
+
+    router.replace('/mini-app/login');
   }, [router]);
 
-  return (
-    <></>
-  );
+  return null;
 }
