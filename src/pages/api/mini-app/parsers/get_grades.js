@@ -46,10 +46,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const grades = await response.json();
+    const gradesData = await response.json();
+
+    const sortedGrades = (gradesData.grades || []).sort((a, b) => {
+      if (a.date_visit > b.date_visit) return -1;
+      if (a.date_visit < b.date_visit) return 1;
+
+      return b.lesson_number - a.lesson_number;
+    });
+
     res.status(200).json({
       success: true,
-      grades
+      grades: sortedGrades
     });
 
   } catch (err) {
