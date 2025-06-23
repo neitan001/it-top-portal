@@ -48,9 +48,11 @@ function error(...args) {
   }
 }
 
-export default {
+const logger = {
   log,
   info,
   warn,
   error,
 };
+
+export default logger;
