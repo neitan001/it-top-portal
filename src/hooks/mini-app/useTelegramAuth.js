@@ -28,6 +28,11 @@ export default function useTelegramAuth() {
           return;
         }
 
+        if (!tgWebApp.CloudStorage || !tgWebApp.CloudStorage.getItem) {
+          setState({ tgId: null, isLoading: false, isTelegram: true });
+          return;
+        }
+
         tgWebApp.expand?.();
 
         Telegram.WebApp.CloudStorage.getItem('tg_id', (err, cachedId) => {
