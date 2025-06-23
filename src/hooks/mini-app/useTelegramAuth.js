@@ -24,7 +24,6 @@ export default function useTelegramAuth() {
         const isTelegram = !!tgWebApp;
 
         if (!isTelegram) {
-          // Пробуем взять из localStorage, если не в Telegram
           const cachedLocalId = localStorage.getItem('tg_id');
           setState({ tgId: cachedLocalId, isLoading: false, isTelegram: false });
           return;
@@ -40,7 +39,6 @@ export default function useTelegramAuth() {
           return;
         }
 
-        // Отправляем initData на сервер для валидации
         fetch("/api/mini-app/auth/validate-tg", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -49,7 +47,6 @@ export default function useTelegramAuth() {
           .then(res => res.json())
           .then(data => {
             if (data.valid) {
-              // Записываем tg_id в localStorage
               localStorage.setItem('tg_id', userId.toString());
               setState({ tgId: userId, isLoading: false, isTelegram: true });
             } else {
