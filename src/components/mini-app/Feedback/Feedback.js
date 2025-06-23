@@ -16,7 +16,6 @@ export default function Feedback({ tgId }) {
         const data = await res.json();
         if (!data.success) throw new Error('Ошибка в данных');
 
-        // Сортируем отзывы от новых к старым
         const sortedFeedback = (data.feedback || []).sort(
           (a, b) => new Date(b.date) - new Date(a.date)
         );
