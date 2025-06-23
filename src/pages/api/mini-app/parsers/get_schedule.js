@@ -35,6 +35,8 @@ export default async function handler(req, res) {
         'User-Agent': USER_AGENT,
         'Origin': ORIGIN,
         'Referer': REFERER,
+        'Accept': "application/json",
+        'Content-Type': "application/json",
       }
     });
 
