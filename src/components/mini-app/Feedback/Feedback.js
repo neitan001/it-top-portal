@@ -2,14 +2,18 @@
 import { useEffect, useState } from 'react';
 import styles from './Feedback.module.css';
 
-export default function Feedback() {
+export default function Feedback({ tgId }) {
     const [feedbacks, setFeedbacks] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/mini_app/parsers/get_feedback');
+                const res = await fetch('/api/mini_app/parsers/get_feedback', {
+                    headers: {
+                        'X-Telegram-ID': tgId,
+                    },
+                });
                 if (!res.ok) throw new Error('Ошибка загрузки');
                 setFeedbacks(await res.json());
             } catch (err) {

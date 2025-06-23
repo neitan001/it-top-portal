@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import styles from './Grades.module.css';
 
-export default function Grades() {
+export default function Grades({ tgId }) {
   const perPage = 24;
 
   const [allGrades, setAllGrades] = useState([]);
@@ -16,7 +16,11 @@ export default function Grades() {
       try {
         setLoading(true);
         setError(null);
-        const resp = await fetch('/api/mini_app/parsers/get_grades');
+        const resp = await fetch('/api/mini_app/parsers/get_grades', {
+          headers: {
+            'X-Telegram-ID': tgId,
+          },
+        });
         if (!resp.ok) throw new Error('Ошибка при получении данных');
         const data = await resp.json();
         setAllGrades(data);
@@ -78,15 +82,15 @@ export default function Grades() {
     <div className={styles.container}>
       <header className={styles.header}>
         <button className={styles.navButton} onClick={() => currentPage > 1 && setCurrentPage(prev => prev - 1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" fill="none" strokeWidth="2" />
-            </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" fill="none" strokeWidth="2" />
+          </svg>
         </button>
         <h1 className={styles.gradeH1}>Оценки</h1>
         <button className={styles.navButton} onClick={() => currentPage < totalPages && setCurrentPage(prev => prev + 1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" fill="none" strokeWidth="2" />
-            </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" fill="none" strokeWidth="2" />
+          </svg>
         </button>
       </header>
 
@@ -115,7 +119,7 @@ export default function Grades() {
           const date = new Date(grade.date_visit).toLocaleDateString('ru-RU');
           const statusClasses = grade.status_was === 0 ? styles.pass
             : grade.status_was === 2 ? styles.late
-            : '';
+              : '';
           return (
             <div
               key={idx}
