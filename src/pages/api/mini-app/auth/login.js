@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       data: {
         login,
         password: encryptedPassword,
-        tg_id,
+        tg_id: String(tg_id),
         token,
         group_name,
         last_visit: new Date()
