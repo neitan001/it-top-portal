@@ -34,7 +34,7 @@ jobs:
 
       - name: Deploy over SSH
         run: |
-          ssh -vvv -tt -oHostKeyAlgorithms=+ssh-ed25519 -oKexAlgorithms=+curve25519-sha256 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          ssh -oHostKeyAlgorithms=+ssh-ed25519 -oKexAlgorithms=+curve25519-sha256 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             set -e
             cd ~/apps/nextjs-app || exit
             echo "Pulling latest changes..."
