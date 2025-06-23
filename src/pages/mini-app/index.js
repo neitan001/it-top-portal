@@ -22,7 +22,7 @@ function MiniAppLoader() {
     }
 
     window.location.replace('/mini-app/login');
-  }, [router]);
+  }, []);
 
   return null;
 }
