@@ -217,13 +217,19 @@ const Calendar = ({ tgId }) => {
                 0
             ).getDate();
 
-            setCurrentSelectedDay(prev => {
-                if (diff > 0) {
-                    return Math.min(prev + 1, daysInMonth);
-                } else {
-                    return Math.max(prev - 1, 1);
-                }
-            });
+            let newDay;
+
+            if (diff > 0) {
+                newDay = Math.min(currentSelectedDay + 1, daysInMonth);
+            } else {
+                newDay = Math.max(currentSelectedDay - 1, 1);
+            }
+
+            setCurrentSelectedDay(newDay);
+
+            const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), newDay);
+            setSelectedDate(newSelectedDate);
+            fetchSchedule(newSelectedDate);
         }
     };
 

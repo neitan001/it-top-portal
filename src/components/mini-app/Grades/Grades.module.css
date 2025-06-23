@@ -74,9 +74,8 @@
 
 .grade {
   display: grid;
-  grid-template-columns: repeat(4, 80px);
+  grid-template-columns: repeat(4, minmax(60px, 1fr));
   gap: 10px;
-  width: fit-content;
   padding: 0;
   animation: appleScaleIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
