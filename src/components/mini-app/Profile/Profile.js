@@ -28,9 +28,9 @@ export default function Profile() {
 
     try {
       const [profileRes, performanceRes, attendanceRes] = await Promise.all([
-        fetchJSON('/api/mini_app/parsers/get_profile_info', 'Ошибка при получении данных с сервера'),
-        fetchJSON('/api/mini_app/parsers/get_profile_performance_metric_grade', 'Ошибка при получении данных о среднем балле'),
-        fetchJSON('/api/mini_app/parsers/get_profile_performance_metric_attendance', 'Ошибка при получении данных о посещаемости')
+        fetchJSON('/api/mini-app/parsers/get_profile_info', 'Ошибка при получении данных с сервера'),
+        fetchJSON('/api/mini-app/parsers/get_profile_performance_metric_grade', 'Ошибка при получении данных о среднем балле'),
+        fetchJSON('/api/mini-app/parsers/get_profile_performance_metric_attendance', 'Ошибка при получении данных о посещаемости')
       ]);
 
       setProfile(profileRes);
@@ -38,7 +38,7 @@ export default function Profile() {
       setAttendanceData(attendanceRes);
       setShowStatus(false);
 
-      loadRating('/api/mini_app/parsers/get_rating_group_info');
+      loadRating('/api/mini-app/parsers/get_rating_group_info');
     } catch (error) {
       console.error('Ошибка при загрузке профиля:', error);
       setStatusMessage('Ошибка при загрузке профиля. Попробуйте позже.');
@@ -60,8 +60,8 @@ export default function Profile() {
   const updatePlaces = async (fullName) => {
     try {
       const [groupPlace, streamPlace] = await Promise.all([
-        getPlaceFromRating('/api/mini_app/parsers/get_rating_group_info', fullName),
-        getPlaceFromRating('/api/mini_app/parsers/get_rating_stream_info', fullName)
+        getPlaceFromRating('/api/mini-app/parsers/get_rating_group_info', fullName),
+        getPlaceFromRating('/api/mini-app/parsers/get_rating_stream_info', fullName)
       ]);
       return { groupPlace, streamPlace };
     } catch (error) {

@@ -9,7 +9,7 @@ export default function Feedback({ tgId }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/mini_app/parsers/get_feedback', {
+                const res = await fetch('/api/mini-app/parsers/get_feedback', {
                     headers: {
                         'X-Telegram-ID': tgId,
                     },

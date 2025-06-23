@@ -16,7 +16,7 @@ export default function Grades({ tgId }) {
       try {
         setLoading(true);
         setError(null);
-        const resp = await fetch('/api/mini_app/parsers/get_grades', {
+        const resp = await fetch('/api/mini-app/parsers/get_grades', {
           headers: {
             'X-Telegram-ID': tgId,
           },
