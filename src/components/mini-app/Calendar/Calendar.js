@@ -232,7 +232,7 @@ const Calendar = ({ tgId }) => {
         setSelectedDate(today);
         setCurrentSelectedDay(today.getDate());
         fetchSchedule(today);
-    }, [fetchSchedule]);
+    }, []);
 
     return (
         <>
