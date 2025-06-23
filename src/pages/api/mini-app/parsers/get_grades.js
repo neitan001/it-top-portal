@@ -11,7 +11,6 @@ export default async function handler(req, res) {
     USER_AGENT,
     ORIGIN,
     REFERER,
-    STUDENT_VISITS
   } = process.env;
 
   try {
@@ -24,7 +23,9 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Токен не найден в базе' });
     }
 
-    const response = await fetch(STUDENT_VISITS, {
+    const gradesUrl = process.env.STUDENT_VISITS;
+
+    const response = await fetch(gradesUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${user.token}`,
@@ -46,14 +47,14 @@ export default async function handler(req, res) {
       });
     }
 
-    const sortedGrades = (gradesData.grades || []).sort((a, b) => {
+    const sortedGrades = (gradesData || []).sort((a, b) => {
       if (a.date_visit > b.date_visit) return -1;
       if (a.date_visit < b.date_visit) return 1;
       return b.lesson_number - a.lesson_number;
     });
 
     res.status(200).json({
-      success: gradesData.success ?? true,
+      success: true,
       grades: sortedGrades
     });
 
