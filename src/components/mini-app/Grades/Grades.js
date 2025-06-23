@@ -23,7 +23,11 @@ export default function Grades({ tgId }) {
         });
         if (!resp.ok) throw new Error('Ошибка при получении данных');
         const data = await resp.json();
-        setAllGrades(data);
+        if (data.success && Array.isArray(data.grades)) {
+          setAllGrades(data.grades);
+        } else {
+          return;//throw new Error('Некорректный ответ от сервера');
+        }
       } catch (e) {
         console.error(e);
         setError('Ошибка при загрузке оценок. Попробуйте позже.');
