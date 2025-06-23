@@ -49,7 +49,6 @@ export default async function handler(req, res) {
     const grades = await response.json();
     res.status(200).json({
       success: true,
-      date: targetDate,
       grades
     });
 

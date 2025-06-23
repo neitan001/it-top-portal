@@ -49,7 +49,6 @@ export default async function handler(req, res) {
     const feedback = await response.json();
     res.status(200).json({
       success: true,
-      date: targetDate,
       feedback
     });
 
