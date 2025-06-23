@@ -39,7 +39,7 @@ jobs:
             git reset --hard origin/master
             echo "Current commit: $(git log -1 --oneline)"
             echo "Installing dependencies..."
-            npm install --production
+            npm install
             echo "Building application..."
             npm run build
             echo "Restarting PM2..."
