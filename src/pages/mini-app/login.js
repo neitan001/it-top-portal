@@ -2,10 +2,18 @@ import Head from 'next/head';
 import styles from '@/styles/mini-app/Login.module.css';
 import { useAuthLogic } from '@/lib/mini-app/authLogic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
+import TelegramProvider from '@/components/mini-app/TelegramProvider/TelegramProvider';
 
 export default function LoginPage() {
-  const { tgId, isLoading, isTelegram } = useTelegramAuth();
+  return (
+    <TelegramProvider>
+      <LoginContent />
+    </TelegramProvider>
+  );
+}
 
+function LoginContent() {
+  const { tgId, isLoading, isTelegram } = useTelegramAuth();
   const { message, handleSubmit } = useAuthLogic(tgId);
 
   if (isLoading) return <p>Загрузка...</p>;

@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import styles from '@/styles/mini-app/Dashboard.module.css';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
@@ -9,7 +8,7 @@ const Calendar = dynamic(() => import('@/components/mini-app/Calendar/Calendar')
 export default function Dashboard() {
   const { tgId, isLoading } = useTelegramAuth();
 
-  if (isLoading) {
+  if (isLoading || !tgId ) {
     return <div>Загрузка...</div>;
   }
 
