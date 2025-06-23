@@ -60,7 +60,7 @@ export default async function handler(req, res) {
     console.error('Ошибка:', err);
     res.status(500).json({
       error: 'Внутренняя ошибка сервера',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: err.message
     });
   }
 }
