@@ -114,6 +114,24 @@ a {
   text-decoration: none;
 }
 
+.mini-app-swal-popup {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 15px;
+}
+
+.mini-app-swal-title {
+    color: var(--error-color);
+    font-size: 22px;
+}
+
+.mini-app-swal-confirm-button {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+}
+
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

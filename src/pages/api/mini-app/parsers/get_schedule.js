@@ -1,6 +1,11 @@
 import { prismaMiniApp } from '@/lib/prisma/mini-app';
 
 export default async function handler(req, res) {
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Метод не разрешен' });
+  }
+
   const tg_id = req.headers['x-telegram-id'];
   const { date } = req.query;
 

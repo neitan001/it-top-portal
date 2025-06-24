@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import styles from './Calendar.module.css';
+import Swal from 'sweetalert2';
 
 const Calendar = ({ tgId }) => {
     const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -16,6 +17,22 @@ const Calendar = ({ tgId }) => {
     const dayTouchStartX = useRef(0);
     const [isVisible, setIsVisible] = useState(false);
     const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        if (!loading && hasFetched && !error && schedule.length === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Расписание не найдено",
+                text: "На выбранный день данных нет.",
+                confirmButtonText: 'Ок',
+                customClass: {
+                    popup: 'mini-app-swal-popup',
+                    title: 'mini-app-swal-title',
+                    confirmButton: 'mini-app-swal-confirm-button'
+                }
+            });
+        }
+    }, [loading, hasFetched, error, schedule]);
 
     useEffect(() => {
         setMounted(true);
@@ -311,12 +328,6 @@ const Calendar = ({ tgId }) => {
                                 <p className={styles.scheduleP}>{item.teacher_name}</p>
                             </div>
                         ))}
-                    </div>
-                )}
-
-                {!loading && hasFetched && !error && schedule.length === 0 && (
-                    <div className={styles.errorMessage}>
-                        <p>Расписание не найдено</p>
                     </div>
                 )}
             </div>

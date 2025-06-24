@@ -1,23 +1,19 @@
-import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
 
 const Profile = dynamic(() => import ('@/components/mini-app/Profile/Profile'));
 const Navigation = dynamic(() => import ('@/components/mini-app/Navigation/Navigation'));
 
 export default function ProfilePage() {
-  const [loading, setLoading] = useState(true);
+  const { tgId, isLoading } = useTelegramAuth();
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return <div>Загрузка...</div>;
+  if (isLoading) {
+    return;
   }
 
   return (
     <div className="container">
-      <Profile />
+      <Profile tgId={tgId} />
       <Navigation activePage="/mini-app/profile" />
     </div>
   );

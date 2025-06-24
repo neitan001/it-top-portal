@@ -8,7 +8,7 @@ export default function FeedbackPage() {
   const { tgId, isLoading } = useTelegramAuth();
 
   if (isLoading) {
-    return <div>Загрузка...</div>;
+    return;
   }
 
   return (

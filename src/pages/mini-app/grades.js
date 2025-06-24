@@ -9,7 +9,7 @@ export default function GradesPage() {
   const { tgId, isLoading } = useTelegramAuth();
 
   if (isLoading) {
-    return <div>Загрузка...</div>;
+    return;
   }
 
   return (
