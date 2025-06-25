@@ -7,6 +7,18 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                  try {
+                      const theme = localStorage.getItem('theme') || 'dark';
+                      document.documentElement.setAttribute('data-theme', theme);
+                  } catch(e) {}
+              })();
+            `,
+          }}
+        />
       </body>
     </Html>
   );

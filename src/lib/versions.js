@@ -36,11 +36,11 @@
 
 import React from 'react';
 
-const versions = {
-  WEB_APP: 'Beta 3.0.0',
-  CLOUD: 'Beta 1.0.0',
-  JOURNAL: 'Beta 1.0.0',
-  MEET: 'Beta 1.0.0',
+export const versions = {
+  MINI_APP: 'Beta v3.0.0',
+  CLOUD: 'Beta v1.0.0',
+  JOURNAL: 'Beta v1.0.0',
+  MEET: 'Beta v1.0.0',
 };
 
 export function VersionBadge({ project }) {

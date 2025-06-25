@@ -21,7 +21,7 @@ datasource db {
 
 model User {
   user_id    Int      @id @default(autoincrement())
-  login      String
+  login      String   @unique
   password   String
   token      String?
   tg_id      String?   @unique

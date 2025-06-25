@@ -1,0 +1,82 @@
+:root {     
+    --color-white: #f5f5f7;
+    --color-black: #000000;
+  
+    --color-primary-light: #4DAAFD;
+    --color-primary-dark: #0A84FF;
+  
+    --color-error-light: #E74C3C;
+    --color-error-dark: #FF453A;
+  
+    --color-text-light: #2C3E50;
+    --color-text-dark: #FFFFFF;
+  
+    --color-bg-light: #F5F7FF;
+    --color-bg-dark: #1C1C1E;
+  
+    --color-shadow-light: rgba(0, 0, 0, 0.04);
+    --color-shadow-dark: rgba(0, 0, 0, 0.1);
+  
+    --color-primary-light-rgb: 94, 124, 226;
+    --color-primary-dark-rgb: 10, 132, 255;
+  
+    --border-radius: 20px;
+    --transition-speed: 0.3s;
+  
+    --color-text-secondary-light: rgba(44, 62, 80, 0.7);
+    --color-text-secondary-dark: rgba(255, 255, 255, 0.7);
+    --color-border-light: rgba(94, 124, 226, 0.2);
+    --color-border-dark: rgba(255, 255, 255, 0.1);
+    --color-card-bg-light: rgba(255, 255, 255, 0.8);
+    --color-card-bg-dark: rgba(28, 28, 30, 0.8);
+  }
+  
+  [data-theme="light"] {
+    --background: var(--color-white);
+    --foreground: #171717;
+    --bg-color: var(--color-bg-light);
+    --card-bg: var(--color-card-bg-light);
+    --text-color: var(--color-text-light);
+    --text-secondary: var(--color-text-secondary-light);
+    --accent-color: var(--color-primary-light);
+    --input-bg: rgba(94, 124, 226, 0.05);
+    --input-border: rgba(94, 124, 226, 0.2);
+    --input-text: var(--color-text-light);
+    --label-bg: var(--color-bg-light);
+    --shadow-color: var(--color-shadow-light);
+    --divider-color: var(--color-border-light);
+    --error-color: var(--color-error-light);
+    --id-badge-bg: linear-gradient(90deg, var(--color-primary-light) 0%, #8E54E9 100%);
+    --id-badge-text: var(--color-white);
+    --card-shadow: 0 10px 30px -15px var(--shadow-color);
+    --input-focus-glow: 0 4px 15px rgba(94, 124, 226, 0.3);
+    --accent-color-rgb: var(--color-primary-light-rgb);
+    --border: 0.5px solid var(--divider-color);
+    --leaderboard-button-bg: rgba(0, 0, 0, 0.03);
+    --star-color: white;
+  }
+  
+  [data-theme="dark"] {
+    --background: linear-gradient(160deg, var(--color-black) 0%, #1a1a1a 100%);
+    --foreground: var(--color-white);
+    --bg-color: var(--color-bg-dark);
+    --card-bg: var(--color-card-bg-dark);
+    --text-color: var(--color-text-dark);
+    --text-secondary: var(--color-text-secondary-dark);
+    --accent-color: var(--color-primary-dark);
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-text: var(--color-text-dark);
+    --label-bg: rgba(28, 28, 30, 0.8);
+    --shadow-color: var(--color-shadow-dark);
+    --divider-color: var(--color-border-dark);
+    --error-color: var(--color-error-dark);
+    --id-badge-bg: var(--color-white);
+    --id-badge-text: var(--color-black);
+    --card-shadow: none;
+    --input-focus-glow: 0 4px 10px rgba(10, 132, 255, 0.5);
+    --accent-color-rgb: var(--color-primary-dark-rgb);
+    --border: 0.5px solid var(--divider-color);
+    --leaderboard-button-bg: rgba(255, 255, 255, 0.05);
+    --star-color: var(--text-secondary);
+  }

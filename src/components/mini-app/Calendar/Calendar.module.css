@@ -14,7 +14,7 @@
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: #f8f9fa;
+  background-color: var(--input-bg);
   border-radius: 4px;
   margin-bottom: 10px;
 }
@@ -25,11 +25,11 @@
     align-items: center;
     margin-bottom: 20px;
     padding: 16px;
-    background: rgba(28, 28, 30, 0.8);
+    background: var(--label-bg);
     border-radius: 14px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px var(--shadow-color);
+    border: 0.5px solid var(--divider-color);
     animation: jumpInFromTop 1.2s ease-out forwards;
 }
 
@@ -37,18 +37,19 @@
     font-size: 16px;
     font-weight: 500;
     margin-bottom: 5px;
+    color: var(--foreground);
 }
 
 .scheduleP {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
 }
 
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     font-size: 14px;
     margin-bottom: 10px;
     padding: 0 16px;
@@ -61,7 +62,7 @@
 .monthYear {
     font-size: 20px;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--foreground);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -74,17 +75,17 @@
 }
 
 .monthYear span {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     font-size: 18px;
 }
 
 .navButton {
     width: 40px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--input-bg);
     border: none;
     border-radius: 12px;
-    color: #ffffff;
+    color: var(--foreground);
     font-size: 24px;
     cursor: pointer;
     display: flex;
@@ -93,11 +94,11 @@
     padding: 0;
     box-sizing: border-box;
     animation-delay: 0.4s;
-    transition: background 0.25s ease;
+    transition: background var(--transition-speed) ease;
 }
 
 .navButton:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--input-border);
 }
 
 .days {
@@ -109,9 +110,9 @@
 
 .days button {
     aspect-ratio: 1;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--input-bg);
     border: none;
-    color: #ffffff;
+    color: var(--foreground);
     font-size: 14px;
     cursor: pointer;
     border-radius: 12px;
@@ -120,30 +121,30 @@
     justify-content: center;
     transform: translateY(10px);
     animation: appleScaleIn 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-    transition: background 0.25s ease;
+    transition: background var(--transition-speed) ease;
 }
 
 .days button.active {
-    background: #0A84FF;
-    color: #ffffff;
+    background: var(--accent-color);
+    color: var(--foreground);
     animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .days button.nonactive {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.3);
+    background: var(--card-bg);
+    color: var(--text-secondary);
 }
 
 .schedule {
     flex-direction: column;
     gap: 15px;
     position: relative;
-    background: rgba(28, 28, 30, 0.8);
+    background: var(--label-bg);
     border-radius: 14px;
     padding: 16px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px var(--shadow-color);
+    border: 0.5px solid var(--divider-color);
     display: none;
 }
 
@@ -158,8 +159,8 @@
 }
 
 .scheduleItem {
-  background: rgba(44, 44, 46, 0.6);
-  border-left: 4px solid #2c2c2e;
+  background: var(--card-bg);
+  border-left: 4px solid var(--divider-color);
   border-radius: 12px;
   padding: 16px;
   transform: translateY(10px);
@@ -185,26 +186,26 @@
 }
 
 .scheduleItem.highlight {
-    background-color: rgba(79, 140, 255, 0.15);
-    border-left: 4px solid #4f8cff;
+    background-color: rgba(var(--accent-color-rgb), 0.15);
+    border-left: 4px solid var(--accent-color);
 }
 
 .time.highlightTime {
-    color: white;
+    color: var(--foreground);
     font-weight: bold;
 }
 
 .dot {
     width: 8px;
     height: 8px;
-    background: #0A84FF;
+    background: var(--accent-color);
     border-radius: 50%;
     margin-right: 10px;
 }
 
 .time, .location {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
 }
 
 .location {

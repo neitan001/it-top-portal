@@ -1,43 +1,71 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import styles from './Grades.module.css';
 
-export default function Grades({ tgId }) {
+export default function Grades({ tgId, onGradesReady }) {
   const perPage = 24;
 
   const [allGrades, setAllGrades] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentFilter, setCurrentFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalData, setModalData] = useState(null);
+  const [examGrades, setExamGrades] = useState([]);
+  const [isGradesReady, setIsGradesReady] = useState(false);
+
+  useEffect(() => {
+    if (isGradesReady && onGradesReady) {
+      onGradesReady();
+    }
+  }, [isGradesReady, onGradesReady]);
+
+  const getColorExamMark = (mark) => {
+    switch (mark) {
+      case 2: return '#d9534f';
+      case 3: return '#f0ad4e';
+      case 4: return '#5cb85c';
+      case 5: return '#4cae4c';
+      default: return '#6c757d';
+    }
+  };
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        setLoading(true);
         setError(null);
-        const resp = await fetch('/api/mini-app/parsers/get_grades', {
-          headers: {
-            'X-Telegram-ID': tgId,
-          },
-        });
-        if (!resp.ok) throw new Error('Ошибка при получении данных');
-        const data = await resp.json();
-        if (data.success && Array.isArray(data.grades)) {
-          setAllGrades(data.grades);
-        } else {
-          return;//throw new Error('Некорректный ответ от сервера');
+
+        const [gradesResp, examResp] = await Promise.all([
+          fetch('/api/mini-app/parsers/get_grades', { headers: { 'X-Telegram-ID': tgId } }),
+          fetch('/api/mini-app/parsers/get_exam_grades', { headers: { 'X-Telegram-ID': tgId } })
+        ]);
+
+        if (!gradesResp.ok || !examResp.ok) throw new Error('Ошибка при получении данных');
+
+        const gradesData = await gradesResp.json();
+        const examData = await examResp.json();
+
+        if (gradesData.success && Array.isArray(gradesData.grades)) {
+          setAllGrades(gradesData.grades);
+        }
+
+        if (examData.success && Array.isArray(examData.examgradesinfo)) {
+          const sorted = [...examData.examgradesinfo].sort((a, b) => {
+            if (!a.date && !b.date) return 0;
+            if (!a.date) return 1;
+            if (!b.date) return -1;
+            return new Date(b.date) - new Date(a.date);
+          });
+          setExamGrades(sorted);
+          setIsGradesReady(true);
         }
       } catch (e) {
         console.error(e);
         setError('Ошибка при загрузке оценок. Попробуйте позже.');
         setTimeout(() => setError(null), 3000);
-      } finally {
-        setLoading(false);
       }
     }
     fetchAll();
   }, []);
+
 
   const filteredGrades = useMemo(() => {
     return currentFilter === 'all'
@@ -112,9 +140,6 @@ export default function Grades({ tgId }) {
         ))}
       </select>
 
-      {loading && (
-        <div className={styles.statusMessage}>{['Загрузка оценок...', 'Ожидайте...'][Math.floor(Math.random() * 2)]}</div>
-      )}
       {error && <div className={styles.statusMessage}>{error}</div>}
 
       <div className={styles.grade}>
@@ -142,6 +167,35 @@ export default function Grades({ tgId }) {
           );
         })}
       </div>
+
+      {examGrades.length > 0 && (
+        <div className={styles.examSection}>
+          <header className={styles.examHeader}>
+            <h1 className={styles.examTextHeader}>Экзамены</h1>
+          </header>
+          <div className={styles.examTable}>
+            <div className={styles.examRow + ' ' + styles.examHead}>
+              <span>Предмет</span>
+              <span>Оценка</span>
+              <span>Преподаватель</span>
+              <span>Дата</span>
+            </div>
+            {examGrades.map((exam, idx) => (
+              <div key={idx} className={styles.examRow}>
+                <span>{exam.spec}</span>
+                <span
+                  className={styles.markCircle}
+                  style={{ backgroundColor: getColorExamMark(exam.mark > 0 ? exam.mark : 0) }}
+                >
+                  {exam.mark > 0 ? exam.mark : '—'}
+                </span>
+                <span>{exam.teacher || '—'}</span>
+                <span>{exam.date ? new Date(exam.date).toLocaleDateString('ru-RU') : '—'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {modalData && (
         <div className={styles.modal} onClick={() => setModalData(null)}>
