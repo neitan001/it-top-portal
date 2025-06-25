@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image'
 import { versions } from '@/lib/versions';
 import styles from './Profile.module.css';
+import Swal from 'sweetalert2';
 
-export default function Profile({ tgId }) {
+export default function Profile({ tgId, onProfileReady }) {
   const [profile, setProfile] = useState(null);
   const [performanceData, setPerformanceData] = useState(null);
   const [attendanceData, setAttendanceData] = useState(null);
@@ -13,11 +14,17 @@ export default function Profile({ tgId }) {
   const [showStatus, setShowStatus] = useState(false);
   const [groupPlace, setGroupPlace] = useState(null);
   const [streamPlace, setStreamPlace] = useState(null);
-
+  const [isProfileReady, setIsProfileReady] = useState(false);
 
   useEffect(() => {
     if (tgId) fetchProfileData();
   }, [tgId]);
+
+  useEffect(() => {
+    if (isProfileReady && onProfileReady) {
+      onProfileReady();
+    }
+  }, [isProfileReady, onProfileReady]);
 
   const fetchJSON = async (url, errorMsg) => {
     const res = await fetch(url, {
@@ -32,10 +39,6 @@ export default function Profile({ tgId }) {
   };
 
   const fetchProfileData = async () => {
-    const loadingMessages = ['Загрузка профиля...', 'Ожидайте...'];
-    setStatusMessage(loadingMessages[Math.floor(Math.random() * loadingMessages.length)]);
-    setShowStatus(true);
-
     try {
       const [profileRes, performanceRes, attendanceRes] = await Promise.all([
         fetchJSON('/api/mini-app/parsers/get_profile_info', 'Ошибка при получении данных с сервера'),
@@ -56,6 +59,8 @@ export default function Profile({ tgId }) {
         setGroupPlace(places.groupPlace);
         setStreamPlace(places.streamPlace);
       }
+      
+      setIsProfileReady(true);
     } catch (error) {
       console.error('Ошибка при загрузке профиля:', error);
       setStatusMessage('Ошибка при загрузке профиля. Попробуйте позже.');
@@ -111,28 +116,29 @@ export default function Profile({ tgId }) {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (tgId) => {
     try {
-      const userId = JSON.parse(sessionStorage.getItem('userData'))?.id || null;
-      const response = await fetch('api/mini-app/auth/logout', {
+      const response = await fetch('/api/mini-app/auth/logout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-        credentials: 'include'
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Telegram-ID': tgId
+        }
       });
 
       if (response.ok) {
-        window.location.href = '/';
+        localStorage.removeItem('tg_id');
+        localStorage.removeItem('theme');
+        window.location.href = '/mini-app';
       } else {
-        const result = await response.json();
-        console.error('Ошибка при выходе:', result.error);
+        console.error('Ошибка при выходе: сервер вернул ошибку', response.status);
       }
     } catch (error) {
-      console.error("Ошибка при выполнении запроса:", error);
+      console.error('Ошибка при выходе:', error);
     }
   };
 
-  const handleOpenSettings = async (onLogout) => {
+  const handleOpenSettings = async (tgId) => {
     const modal = document.createElement('div');
     modal.className = styles.modalOverlay;
 
@@ -166,8 +172,8 @@ export default function Profile({ tgId }) {
 
     themeSwitch.appendChild(themeIcon);
     themeSwitch.appendChild(themeLabel);
+    themeLabel.className = styles.themeLabel;
 
-    // Получаем сохранённую тему из localStorage или ставим по умолчанию 'light'
     let savedTheme = localStorage.getItem('theme');
     if (!savedTheme) {
       savedTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -178,12 +184,25 @@ export default function Profile({ tgId }) {
     let isDarkTheme = savedTheme !== 'light';
     updateThemeSwitchIcon();
 
-    themeSwitch.addEventListener('click', () => {
+    themeSwitch.addEventListener('click', async () => {
       isDarkTheme = !isDarkTheme;
       const theme = isDarkTheme ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);  // Сохраняем выбранную тему
+      localStorage.setItem('theme', theme);
       updateThemeSwitchIcon();
+
+      try {
+        await fetch('/api/mini-app/set_theme', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-ID': tgId
+          },
+          body: JSON.stringify({ theme })
+        });
+      } catch (error) {
+        console.error('Ошибка при сохранении темы:', error);
+      }
     });
 
     function updateThemeSwitchIcon() {
@@ -235,14 +254,52 @@ export default function Profile({ tgId }) {
     versionBlock.appendChild(versionTextContainer);
     versionBlock.appendChild(versionLabel);
 
+    const divider2 = document.createElement('div');
+    divider2.className = styles.divider;
+
+    const dataSourceBlock = document.createElement('div');
+    dataSourceBlock.className = styles.block;
+
+    const dataSourceTextContainer = document.createElement('div');
+    dataSourceTextContainer.className = styles.textContainer;
+
+    const dataSourceTitle = document.createElement('h3');
+    dataSourceTitle.textContent = 'Данные';
+
+    const dataSourceDesc = document.createElement('p');
+    dataSourceDesc.textContent = 'Данные берутся из журнала IT TOP Journal.';
+
+    dataSourceTextContainer.appendChild(dataSourceTitle);
+    dataSourceTextContainer.appendChild(dataSourceDesc);
+
+    dataSourceBlock.appendChild(dataSourceTextContainer);
+
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = styles.buttonsContainer;
 
     const logoutBtn = document.createElement('button');
     logoutBtn.className = styles.logoutButton;
     logoutBtn.textContent = 'Выйти из аккаунта';
-    logoutBtn.addEventListener('click', () => {
-      if (onLogout) onLogout();
+    logoutBtn.addEventListener('click', async () => {
+      document.body.removeChild(modal);
+      const result = await Swal.fire({
+        title: 'Подтверждение выхода',
+        text: 'Вы точно хотите выйти из аккаунта?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Да, выйти',
+        cancelButtonText: 'Отмена',
+        reverseButtons: true,
+        customClass: {
+          popup: 'mini-app-swal-popup-logout',
+          title: 'mini-app-swal-title-logout',
+          confirmButton: 'mini-app-swal-confirm-button-logout'
+        }
+      });
+      
+      if (result.isConfirmed) {
+        handleLogout(tgId);
+      }
     });
 
     const closeBtn = document.createElement('button');
@@ -259,6 +316,8 @@ export default function Profile({ tgId }) {
     modalContent.appendChild(themeBlock);
     modalContent.appendChild(divider);
     modalContent.appendChild(versionBlock);
+    modalContent.appendChild(divider2);
+    modalContent.appendChild(dataSourceBlock);
     modalContent.appendChild(buttonsContainer);
 
     modal.appendChild(modalContent);
@@ -303,14 +362,20 @@ export default function Profile({ tgId }) {
 
       <div className={styles.profileHeader}>
         <div className={styles.settingsButton}>
-          <button onClick={handleOpenSettings}>
+          <button onClick={() => handleOpenSettings(tgId)}>
             <svg width="30" height="30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.61915 3.28333C8.69415 2.83167 9.08581 2.5 9.54415 2.5H10.455C10.9133 2.5 11.305 2.83167 11.38 3.28333L11.5041 4.02833C11.5625 4.38167 11.8241 4.665 12.1541 4.80333C12.4858 4.94 12.8666 4.92167 13.1583 4.71333L13.7725 4.27417C13.9531 4.14505 14.1737 4.08423 14.395 4.10254C14.6163 4.12085 14.8239 4.21711 14.9808 4.37417L15.625 5.01917C15.95 5.34333 15.9916 5.85417 15.725 6.2275L15.2858 6.84167C15.0775 7.13333 15.0591 7.51333 15.1966 7.845C15.3341 8.17583 15.6175 8.43667 15.9716 8.495L16.7158 8.62C17.1683 8.695 17.4991 9.08583 17.4991 9.54417V10.4558C17.4991 10.9142 17.1683 11.3058 16.7158 11.3808L15.9708 11.505C15.6175 11.5633 15.3341 11.8242 15.1966 12.155C15.0591 12.4867 15.0775 12.8667 15.2858 13.1583L15.725 13.7733C15.9916 14.1458 15.9491 14.6567 15.625 14.9817L14.98 15.6258C14.8231 15.7827 14.6156 15.8788 14.3946 15.8971C14.1735 15.9154 13.953 15.8547 13.7725 15.7258L13.1575 15.2867C12.8658 15.0783 12.4858 15.06 12.155 15.1975C11.8233 15.335 11.5633 15.6183 11.5041 15.9717L11.38 16.7167C11.305 17.1683 10.9133 17.5 10.455 17.5H9.54331C9.08498 17.5 8.69415 17.1683 8.61831 16.7167L8.49498 15.9717C8.43581 15.6183 8.17498 15.335 7.84415 15.1967C7.51248 15.06 7.13248 15.0783 6.84081 15.2867L6.22581 15.7258C5.85331 15.9925 5.34248 15.95 5.01748 15.6258L4.37331 14.9808C4.21625 14.8239 4.12 14.6163 4.10168 14.395C4.08337 14.1737 4.14419 13.9531 4.27331 13.7725L4.71248 13.1583C4.92081 12.8667 4.93915 12.4867 4.80248 12.155C4.66498 11.8242 4.38081 11.5633 4.02748 11.505L3.28248 11.38C2.83081 11.305 2.49915 10.9133 2.49915 10.4558V9.54417C2.49915 9.08583 2.83081 8.69417 3.28248 8.61917L4.02748 8.495C4.38081 8.43667 4.66498 8.17583 4.80248 7.845C4.93998 7.51333 4.92165 7.13333 4.71248 6.84167L4.27415 6.22667C4.14502 6.04604 4.0842 5.82544 4.10252 5.60416C4.12083 5.38288 4.21709 5.17528 4.37415 5.01833L5.01831 4.37417C5.17526 4.21711 5.38286 4.12085 5.60414 4.10254C5.82542 4.08423 6.04601 4.14505 6.22665 4.27417L6.84081 4.71333C7.13248 4.92167 7.51331 4.94 7.84415 4.8025C8.17498 4.665 8.43581 4.38167 8.49415 4.02833L8.61915 3.28333Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M12.5 10C12.5 10.663 12.2366 11.2989 11.7678 11.7678C11.2989 12.2366 10.663 12.5 10 12.5C9.33696 12.5 8.70107 12.2366 8.23223 11.7678C7.76339 11.2989 7.5 10.663 7.5 10C7.5 9.33696 7.76339 8.70107 8.23223 8.23223C8.70107 7.76339 9.33696 7.5 10 7.5C10.663 7.5 11.2989 7.76339 11.7678 8.23223C12.2366 8.70107 12.5 9.33696 12.5 10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>
-        <img src={profile.photo} alt="Аватарка пользователя" />
+        <img 
+          src={profile.photo} 
+          alt="Аватарка пользователя" 
+          width={100} 
+          height={100}
+          className={styles.profileImage}
+        />
         <h1 id="profile-name">{profile.full_name}</h1>
         <p>{profile.group_name}</p>
       </div>
@@ -332,9 +397,9 @@ export default function Profile({ tgId }) {
             {totalPoints}
             <span style={{ marginRight: '15px' }}><Image src="/images/coins/top-money.svg" alt="Топ моней" width={20} height={20} className={styles.topMoneySvg} /></span>
             {coinsPoints}
-            <span style={{ marginRight: '15px' }}><Image src="/images/coins/coins.png" alt="Топ коины" width={20} height={20} className={styles.topCoinsPng} /></span>
+            <span style={{ marginRight: '15px' }}><Image src="/images/coins/coins.png" alt="Топ коины" width={20} height={20} className={styles.topCoinsPng} priority /></span>
             {gemsPoints}
-            <span style={{ marginRight: '15px' }}><Image src="/images/coins/gems.png" alt="Топ гемы" width={20} height={20} className={styles.topGemsPng} /></span>
+            <span style={{ marginRight: '15px' }}><Image src="/images/coins/gems.png" alt="Топ гемы" width={20} height={20} className={styles.topGemsPng} priority /></span>
           </span>
         </p>
       </div>

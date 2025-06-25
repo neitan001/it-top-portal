@@ -13,9 +13,9 @@
 }
 
 .modalContent {
-    background-color: rgba(28, 28, 30, 0.8);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 24px var(--shadow-color);
+    border: var(--border);
     backdrop-filter: blur(1px);
     margin: 15% auto;
     padding: 20px;
@@ -27,7 +27,7 @@
 }
 
 .closeButton {
-    color: #0A84FF;
+    color: var(--accent-color);
     font-size: 30px;
     font-weight: bold;
     position: absolute;
@@ -39,19 +39,20 @@
 
 .closeButton:hover,
 .closeButton:focus {
-    color: #ffffff;
+    color: var(--text-color);
     text-decoration: none;
     cursor: pointer;
 }
 
 .headText {
-    color: white;
+    color: var(--text-color);
     display: flex;
     font-size: 22px;
     justify-content: center;
 }
 
 .date {
+    color: var(--text-secondary);
     display: flex;
     font-size: 15px;
     margin: 10px 0;
@@ -59,7 +60,7 @@
 }
 
 .teacher {
-    color: white;
+    color: var(--text-secondary);
     display: flex;
     font-size: 15px;
     margin: 10px 0;
@@ -67,6 +68,7 @@
 }
 
 .numberOfLessons {
+    color: var(--text-secondary);
     display: flex;
     font-size: 15px;
     margin: 10px 0;
@@ -74,7 +76,7 @@
 }
 
 .subject {
-    color: white;
+    color: var(--text-color);
     display: flex;
     font-size: 15px;
     margin: 10px 0;
@@ -83,7 +85,7 @@
 }
 
 .evaluationHeader {
-    color: white;
+    color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -102,7 +104,7 @@
     font-size: 30px;
     cursor: pointer;
     transition: color 0.2s ease;
-    color: gray;
+    color: var(--star-color);
 }
 
 .star:hover,
@@ -119,11 +121,11 @@
 }
 
 .tagButton {
-    background: #3a3a3c;
-    border: none;
+    background: transparent;
+    border: var(--border);
     padding: 8px 12px;
     border-radius: 10px;
-    color: white;
+    color: var(--text-color);
     cursor: pointer;
     font-size: 12px;
     width: 48%;
@@ -132,8 +134,8 @@
 }
 
 .tagButton.active {
-    background: #0a84ff;
-    color: white;
+    background: var(--accent-color);
+    color: var(--text-color);
     transform: scale(0.95);
 }
 
@@ -152,10 +154,10 @@
     padding: 12px 16px;
     font-size: 14px;
     font-weight: 500;
-    color: #ffffff;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    border: var(--border);
     border-radius: 30px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--input-bg);
     outline: none;
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -167,8 +169,8 @@
     left: 20px;
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(28, 28, 30, 0.8);
+    color: var(--text-secondary);
+    background: var(--label-bg);
     padding: 0 5px;
     border-radius: 5px;
 }
@@ -176,8 +178,8 @@
 .nextButton {
     width: 100%;
     padding: 0.75rem;
-    background: #0a84ff;
-    color: white;
+    background: var(--accent-color);
+    color: var(--text-color);
     border: none;
     border-radius: 10px;
     font-size: 1rem;
@@ -190,7 +192,7 @@
 }
 
 .errorMessage {
-    color: #f44336;
+    color: var(--error-color);
     margin: 0.5rem 0;
     font-size: 0.9rem;
 }

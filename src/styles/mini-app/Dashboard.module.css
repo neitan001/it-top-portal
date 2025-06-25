@@ -11,25 +11,25 @@
     align-items: center;
     margin-bottom: 20px;
     padding: 16px;
-    background: rgba(28, 28, 30, 0.8);
+    background: var(--label-bg);
     border-radius: 14px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px var(--shadow-color);
+    border: 0.5px solid var(--divider-color);
     animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .header h1 {
     font-size: 20px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--foreground);
     opacity: 0;
     transform: translateY(20px);
     animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .header h1 span {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     margin-left: 5px;
 }
 

@@ -38,6 +38,10 @@ export function useAuthLogic(tg_id) {
         return;
       }
 
+      if (data.theme) {
+        localStorage.setItem('theme', data.theme);
+      }
+
       router.push("/mini-app/dashboard");
     } catch (err) {
       console.error(err);

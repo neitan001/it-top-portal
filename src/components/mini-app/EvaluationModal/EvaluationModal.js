@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import styles from './EvaluationModal.module.css';
 
-const EvaluationModal = () => {
+const EvaluationModal = ({ tgId }) => {
     const apiLessonsUrl = "/api/mini-app/parsers/get_evaluate_lesson_list";
-    const feedbackUrl = "/api/send_evaluate_lesson";
+    const feedbackUrl = "/api/mini-app/parsers/send_evaluate_lesson";
 
     const teacherTagMapping = [
         { id: 8, text: "Всё супер!" },
@@ -44,12 +44,14 @@ const EvaluationModal = () => {
 
     const fetchLessonsData = async () => {
         try {
-            const response = await fetch(apiLessonsUrl);
+            const response = await fetch(apiLessonsUrl, { headers: { 'X-Telegram-ID': tgId } });
             if (!response.ok) throw new Error("Ошибка получения данных");
-            const data = await response.json();
-            setLessons(data);
-            if (data.length > 0) {
-                setIsModalOpen(true);
+            const { success, evaluateLesson } = await response.json();
+            if (success && evaluateLesson) {
+                setLessons(evaluateLesson);
+                if (evaluateLesson.length > 0) {
+                    setIsModalOpen(true);
+                }
             }
         } catch (error) {
             console.error("Ошибка:", error);
@@ -60,7 +62,7 @@ const EvaluationModal = () => {
         try {
             const response = await fetch(feedbackUrl, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "X-Telegram-ID": tgId },
                 body: JSON.stringify(payload)
             });
             if (!response.ok) throw new Error("Ошибка отправки данных");
@@ -133,9 +135,7 @@ const EvaluationModal = () => {
                 comment_teach: teacherComment
             };
 
-            console.log("Отправка данных:", payload);
             const feedbackResponse = await sendFeedback(payload);
-            console.log("Ответ сервера:", feedbackResponse);
 
             if (currentLessonIndex + 1 < lessons.length) {
                 setCurrentLessonIndex(currentLessonIndex + 1);

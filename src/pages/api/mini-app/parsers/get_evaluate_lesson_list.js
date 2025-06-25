@@ -1,65 +1,87 @@
-export default function handler(req, res) {
+import { prismaMiniApp } from '@/lib/prisma/mini-app';
+import refreshToken from '@/lib/mini-app/refreshToken';
 
-    if (req.method !== 'GET') {
-        return res.status(405).json({ message: 'Метод не разрешен' });
+async function fetchEvaluateLessonList(url, headers) {
+  const response = await fetch(url, { method: 'GET', headers });
+
+  if (response.status === 401) {
+    return { shouldRetry: true };
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    return { error, status: response.status };
+  }
+
+  return { data: await response.json() };
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Метод не разрешен' });
+  }
+
+  const tg_id = req.headers['x-telegram-id'];
+
+  if (!tg_id) {
+    return res.status(400).json({ error: 'Не указан tg_id' });
+  }
+
+  const {
+    USER_AGENT,
+    ORIGIN,
+    REFERER,
+  } = process.env;
+
+  try {
+    const user = await prismaMiniApp.user.findUnique({
+      where: { tg_id: String(tg_id) },
+      select: { token: true }
+    });
+
+    if (!user?.token) {
+      return res.status(404).json({ error: 'Токен не найден в базе' });
     }
 
-    const currentDate = new Date();
-    const oneDay = 24 * 60 * 60 * 1000;
+    const evaluateLessonUrl = process.env.EVALUATION_LESSONS_LIST;
 
-    const mockLessons = [
-        {
-            key: "lesson_001",
-            fio_teach: "Иванова Анна Петровна",
-            spec_name: "Алгебра",
-            spec_id: "math_101",
-            date_visit: new Date(currentDate.getTime() - oneDay * 2).toISOString(),
-            group_name: "10-А класс",
-            duration: 45,
-            topic: "Решение квадратных уравнений",
-        },
-        {
-            key: "lesson_002",
-            fio_teach: "Сидоров Дмитрий Иванович",
-            spec_name: "Физика",
-            spec_id: "phys_201",
-            date_visit: new Date(currentDate.getTime() - oneDay).toISOString(),
-            group_name: "11-Б класс",
-            duration: 90,
-            topic: "Законы термодинамики",
-        },
-        {
-            key: "lesson_003",
-            fio_teach: "Петрова Елена Владимировна",
-            spec_name: "Русская литература",
-            spec_id: "lit_301",
-            date_visit: currentDate.toISOString(),
-            group_name: "9-В класс",
-            duration: 45,
-            topic: "Анализ 'Горе от ума'",
-        },
-    ];
+    const headers = {
+      'Authorization': `Bearer ${user.token}`,
+      'User-Agent': USER_AGENT,
+      'Origin': ORIGIN,
+      'Referer': REFERER,
+      'Accept': "application/json",
+      'Content-Type': "application/json",
+    };
 
-    // Add authentication check if needed
-    // const session = await getSession({ req });
-    // if (!session) {
-    //   return res.status(401).json({ message: 'Unauthorized' });
-    // }
+    let result = await fetchEvaluateLessonList(evaluateLessonUrl, headers);
 
-    // In a real implementation, you would fetch from your database:
-    // try {
-    //   const lessons = await prisma.lessons.findMany({
-    //     where: {
-    //       student_id: session.user.id,
-    //       evaluation_completed: false,
-    //       date_visit: { lte: new Date() }
-    //     },
-    //     orderBy: { date_visit: 'desc' }
-    //   });
-    //   return res.status(200).json(lessons);
-    // } catch (error) {
-    //   return res.status(500).json({ message: 'Database error', error });
-    // }
+    if (result.shouldRetry) {
+      const newToken = await refreshToken(tg_id);
+      if (newToken) {
+        headers.Authorization = `Bearer ${newToken}`;
+        result = await fetchEvaluateLessonList(evaluateLessonUrl, headers);
+      }
+    }
 
-    res.status(200).json(mockLessons);
+    if (result.error) {
+      return res.status(result.status || 500).json({
+        error: 'Ошибка API райтинг потока',
+        status: result.status,
+        details: result.error
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      evaluateLesson: result.data
+    });
+
+  } catch (err) {
+    console.error('Ошибка:', err);
+    res.status(500).json({
+      error: 'Внутренняя ошибка сервера',
+      details: err.message
+    });
+  }
 }

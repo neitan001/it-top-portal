@@ -15,7 +15,7 @@ export default function Dashboard() {
 
   return (
     <div className={styles.container}>
-      <EvaluationModal />
+      <EvaluationModal tgId={tgId} />
       <Calendar tgId={tgId} />
       <div>
         <Navigation activePage="/mini-app/dashboard" />

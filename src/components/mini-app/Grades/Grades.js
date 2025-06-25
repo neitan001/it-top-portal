@@ -1,16 +1,22 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import styles from './Grades.module.css';
 
-export default function Grades({ tgId }) {
+export default function Grades({ tgId, onGradesReady }) {
   const perPage = 24;
 
   const [allGrades, setAllGrades] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentFilter, setCurrentFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [modalData, setModalData] = useState(null);
   const [examGrades, setExamGrades] = useState([]);
+  const [isGradesReady, setIsGradesReady] = useState(false);
+
+  useEffect(() => {
+    if (isGradesReady && onGradesReady) {
+      onGradesReady();
+    }
+  }, [isGradesReady, onGradesReady]);
 
   const getColorExamMark = (mark) => {
     switch (mark) {
@@ -25,7 +31,6 @@ export default function Grades({ tgId }) {
   useEffect(() => {
     async function fetchAll() {
       try {
-        setLoading(true);
         setError(null);
 
         const [gradesResp, examResp] = await Promise.all([
@@ -50,13 +55,12 @@ export default function Grades({ tgId }) {
             return new Date(b.date) - new Date(a.date);
           });
           setExamGrades(sorted);
+          setIsGradesReady(true);
         }
       } catch (e) {
         console.error(e);
         setError('Ошибка при загрузке оценок. Попробуйте позже.');
         setTimeout(() => setError(null), 3000);
-      } finally {
-        setLoading(false);
       }
     }
     fetchAll();
@@ -136,9 +140,6 @@ export default function Grades({ tgId }) {
         ))}
       </select>
 
-      {loading && (
-        <div className={styles.statusMessage}>{['Загрузка оценок...', 'Ожидайте...'][Math.floor(Math.random() * 2)]}</div>
-      )}
       {error && <div className={styles.statusMessage}>{error}</div>}
 
       <div className={styles.grade}>

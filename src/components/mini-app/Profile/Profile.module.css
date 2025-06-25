@@ -11,8 +11,8 @@
     text-align: center;
     padding: 24px;
     border-radius: 12px;
-    background: rgba(28, 28, 30, 0.8);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
+    border: var(--border);
     animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     margin-top: 20px;
     margin-left: 10px;
@@ -23,7 +23,7 @@
     width: 88px;
     height: 88px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: var(--border);
     margin-bottom: 16px;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -31,14 +31,14 @@
 .profileHeader h1 {
     font-size: 22px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--text-color);
     margin-bottom: 4px;
     letter-spacing: -0.3px;
 }
 
 .profileHeader p {
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--text-secondary);
     font-weight: 400;
 }
 
@@ -50,10 +50,10 @@
 .profileDetails h2 {
     font-size: 17px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--divider-color);
 }
 
 .profileDetails p {
@@ -62,10 +62,10 @@
     justify-content: center;
     margin: 0;
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
     line-height: 1.4;
-    background: rgba(28, 28, 30, 0.8);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
+    border: var(--border);
     border-radius: 12px;
     min-height: 80px;
     animation: appleScaleIn 1.3s cubic-bezier(0.23, 1, 0.32, 1);
@@ -101,17 +101,17 @@
 .placeNumber {
     font-size: 24px;
     font-weight: bold;
-    color: #ffffff;
+    color: var(--text-color);
 }
 
 .placeText {
     display: block;
     font-size: 14px;
-    color: #777;
+    color: var(--text-secondary);
 }
 
 .ratingTableContainer {
-    background: rgba(44, 44, 46, 0.6);
+    background: var(--card-bg);
     border-radius: 14px;
     margin: 0 16px 100px 16px;
     backdrop-filter: blur(10px);
@@ -139,11 +139,11 @@
 .ratingTable th {
     font-weight: 500;
     background: rgba(72, 72, 74, 0.6);
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
 }
 
 .ratingTable td {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
     transition: background 0.25s ease;
 }
 
@@ -162,8 +162,8 @@
 
 .leaderboardButton {
     padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    background: var(--leaderboard-button-bg);
+    color: var(--text-color);
     border-radius: 12px;
     font-size: 16px;
     font-weight: 500;
@@ -174,7 +174,7 @@
 }
 
 .leaderboardButton:hover {
-    background: rgba(10, 132, 255, 1);
+    background: var(--accent-color);
     transform: scale(0.98);
 }
 
@@ -184,8 +184,8 @@
     align-items: center;
     justify-content: space-around;
     padding: 1rem;
-    background: rgba(28, 28, 30, 0.8);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
+    border: var(--border);
     animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     border-radius: 12px;
     margin-top: 20px;
@@ -203,13 +203,12 @@
 .profilePerformance__value {
     font-size: 2rem;
     font-weight: bold;
-    color: #fff;
-    ;
+    color: var(--text-color);
 }
 
 .profilePerformance__label {
     font-size: 0.9rem;
-    color: #777;
+    color: var(--text-secondary);
     margin-top: 0.5rem;
 }
 
@@ -223,7 +222,7 @@
     right: 0;
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     padding: 8px 16px;
     border-radius: 10px;
     font-weight: 500;
@@ -244,14 +243,14 @@
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 1.5rem;
-    color: #ffffff;
-    background: rgba(28, 28, 30, 0.95);
+    color: var(--text-color);
+    background: var(--card-bg);
     padding: 24px 32px;
     border-radius: 18px;
     text-align: center;
     z-index: 1000;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px var(--color-shadow-light);
+    border: var(--border);
 }
 
 .statusMessage::after {
@@ -281,14 +280,14 @@
 }
 
 .modalContent {
-    background-color: rgba(28, 28, 30, 0.8);
+    background-color: var(--card-bg);
     border-radius: 20px;
     margin: 10px;
     padding: 24px;
     width: 100%;
     max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px var(--color-shadow-light);
+    border: var(--border);
     backdrop-filter: blur(1px);
     animation: fadeIn 0.3s ease;
 }
@@ -297,7 +296,7 @@
     margin: 0 0 20px 0;
     font-size: 24px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-color);
 }
 
 .block {
@@ -315,7 +314,7 @@
     margin: 0 0 4px 0;
     font-size: 16px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--text-color);
 }
 
 .block p {
@@ -331,10 +330,14 @@
     height: 44px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: var(--background-secondary);
+    border: var(--border);
+    background-color: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.themeLabel {
+    color: var(--text-color);
 }
 
 .themeSwitch:hover {
@@ -345,9 +348,8 @@
 .themeSwitch svg {
     width: 20px;
     height: 20px;
-    color: var(--text-primary);
+    color: var(--text-color);
 }
-
 
 .divider {
     height: 1px;
@@ -390,9 +392,9 @@
     flex: 1;
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--background-secondary);
-    color: var(--text-primary);
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;

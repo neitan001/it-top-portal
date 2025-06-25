@@ -12,23 +12,23 @@
   align-items: center;
   margin-bottom: 20px;
   padding: 16px;
-  background: rgba(28, 28, 30, 0.8);
+  background: var(--label-bg);
   border-radius: 14px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px var(--shadow-color);
+  border: var(--border);
   animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .gradeH1 {
   font-size: 24px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-color);
   animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .gradeH1 span {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   margin-left: 5px;
 }
 
@@ -40,7 +40,7 @@
 
 .gradeP {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .title {
@@ -56,10 +56,10 @@
   min-width: 200px;
   padding: 12px 16px;
   font-size: 16px;
-  color: white;
-  background: rgba(28, 28, 30, 0.8);
+  color: var(--text-color);
+  background: var(--card-bg);
   border-radius: 14px;
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border: var(--border);
   -webkit-appearance: menulist;
   appearance: menulist;
   text-overflow: ellipsis;
@@ -93,7 +93,7 @@
 .gradeItem {
   height: 80px;
   background-color: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: var(--border);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -114,18 +114,18 @@
 
 .date {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   margin-bottom: 5px;
 }
 
 .date.white {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-color);
 }
 
 .pairNumber {
   font-size: 18px;
   font-weight: 500;
-  color: #0A84FF;
+  color: var(--accent-color);
 }
 
 .pass {
@@ -160,7 +160,7 @@
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 12px;
-  color: #ffffff;
+  color: var(--text-color);
   font-size: 24px;
   cursor: pointer;
   display: flex;
@@ -179,13 +179,13 @@
 .navIcon {
   width: 24px;
   height: 24px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
   transition: all 0.25s ease;
 }
 
 .active .navIcon {
-  color: #0A84FF;
-  fill: #0A84FF;
+  color: var(--accent-color);
+  fill: var(--accent-color);
 }
 
 .gradeCircles {
@@ -231,8 +231,8 @@
 }
 
 .modalContent {
-  background-color: rgba(28, 28, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--card-bg);
+  border: 1px solid var(--divider-color);
   backdrop-filter: blur(1px);
   margin: 15% auto;
   padding: 20px;
@@ -241,7 +241,7 @@
   border-radius: 20px;
   position: relative;
   animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px var(--shadow-color);
 }
 
 .close {
@@ -270,26 +270,6 @@
   width: 100%;
 }
 
-.statusMessage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.5rem;
-  color: #ffffff;
-  background: rgba(28, 28, 30, 0.95);
-  padding: 24px 32px;
-  border-radius: 20px;
-  text-align: center;
-  z-index: 1000;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-}
-
 .examSection {
   margin-top: 24px;
 }
@@ -300,18 +280,18 @@
   align-items: center;
   margin-bottom: 20px;
   padding: 16px;
-  background: rgba(28, 28, 30, 0.8);
+  background: var(--label-bg);
   border-radius: 14px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px var(--shadow-color);
+  border: var(--border);
   animation: appleScaleIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .examTextHeader {
   font-size: 24px !important;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-color);
   text-align: center;
 }
 
@@ -328,6 +308,7 @@
   display: grid;
   grid-template-columns: 1fr 60px 1fr;
   align-items: center;
+  color: var(--text-color);
   background: rgba(255, 255, 255, 0.05);
   padding: 8px;
   border-radius: 8px;

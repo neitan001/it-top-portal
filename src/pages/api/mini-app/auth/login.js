@@ -22,7 +22,6 @@ export default async function handler(req, res) {
   }
 
   try {
-
     const encryptedPassword = encryptPassword(password);
 
     const authResponse = await fetch(AUTH_URL, {
@@ -50,13 +49,16 @@ export default async function handler(req, res) {
     }
 
     const authData = await authResponse.json();
-    const token = authData.token || authData.jwt;
-
+    const token = authData?.access_token;
     let group_name = null;
+
+    if (!token) {
+      return res.status(400).json({ error: "Токен (access_token) не получен от сервера" });
+    }
+
     if (USER_INFO) {
       try {
         const userInfoResponse = await fetch(USER_INFO, {
-          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'User-Agent': USER_AGENT,
@@ -65,37 +67,78 @@ export default async function handler(req, res) {
           }
         });
 
-        if (userInfoResponse.ok) {
-          const userInfo = await userInfoResponse.json();
-          group_name = userInfo.group_name || userInfo.group?.name || null;
+        if (!userInfoResponse.ok) {
+          console.error('Ошибка запроса USER_INFO:', userInfoResponse.status);
         } else {
-          console.warn('Не удалось получить информацию о пользователе, status:', userInfoResponse.status);
+          const userInfo = await userInfoResponse.json();
+          group_name = userInfo.group_name || null;
         }
-      } catch (infoError) {
-        console.error('Ошибка при получении информации о пользователе:', infoError);
+      } catch (error) {
+        console.error('Ошибка при запросе USER_INFO:', error);
       }
     }
 
-    const user = await prismaMiniApp.user.create({
-      data: {
-        login,
-        password: encryptedPassword,
-        tg_id: String(tg_id),
-        token,
-        group_name,
-        last_visit: new Date()
-      },
-      select: {
-        user_id: true,
-        login: true,
-        tg_id: true,
-        group_name: true,
-        theme: true,
-        last_visit: true
+    const existingUser = await prismaMiniApp.user.findFirst({
+      where: {
+        OR: [
+          { tg_id: String(tg_id) },
+          { login: login }
+        ]
       }
     });
 
-    return res.status(200).json({ success: true });
+    const userData = {
+      tg_id: String(tg_id),
+      token: token,
+      group_name: group_name,
+      last_visit: new Date(),
+      password: encryptedPassword,
+    };
+
+    if (existingUser) {
+      const updatedUser = await prismaMiniApp.user.update({
+        where: { user_id: existingUser.user_id },
+        data: userData,
+        select: {
+          user_id: true,
+          login: true,
+          tg_id: true,
+          group_name: true,
+          theme: true,
+          last_visit: true,
+        },
+      });
+    } else {
+      const newUser = await prismaMiniApp.user.create({
+        data: {
+          login,
+          ...userData
+        },
+        select: {
+          user_id: true,
+          login: true,
+          tg_id: true,
+          group_name: true,
+          theme: true,
+          last_visit: true,
+        },
+      });
+    }
+
+    const userForTheme = existingUser ? 
+      await prismaMiniApp.user.findUnique({
+        where: { user_id: existingUser.user_id },
+        select: { theme: true },
+      }) : 
+      await prismaMiniApp.user.findUnique({
+        where: { tg_id: String(tg_id) },
+        select: { theme: true },
+      });
+
+    return res.status(200).json({ 
+      success: true,
+      theme: userForTheme?.theme || 'dark'
+    });
 
   } catch (err) {
     console.error('Ошибка:', err);

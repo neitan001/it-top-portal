@@ -2,9 +2,10 @@
 import { useEffect, useState } from 'react';
 import styles from './Feedback.module.css';
 
-export default function Feedback({ tgId }) {
+export default function Feedback({ tgId, onFeedbackReady }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [error, setError] = useState('');
+  const [isFeedbackReady, setIsFeedbackReady] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,6 +22,7 @@ export default function Feedback({ tgId }) {
         );
 
         setFeedbacks(sortedFeedback);
+        setIsFeedbackReady(true);
       } catch (err) {
         setError('Ошибка при загрузке. Попробуйте позже.');
         setTimeout(() => setError(''), 3000);
@@ -29,6 +31,12 @@ export default function Feedback({ tgId }) {
 
     fetchData();
   }, [tgId]);
+
+  useEffect(() => {
+    if (isFeedbackReady && onFeedbackReady) {
+      onFeedbackReady();
+    }
+  }, [isFeedbackReady, onFeedbackReady]);
 
   return (
     <div className={styles.container}>
@@ -43,9 +51,9 @@ export default function Feedback({ tgId }) {
 
         {feedbacks.length > 0 && (
           <div className={styles.feedbackItems}>
-            {feedbacks.map((item) => (
+            {feedbacks.map((item, index) => (
               <div
-                key={`${item.date}-${item.teacher}`}
+                key={`${item.date}-${item.teacher}-${index}`}
                 className={styles.feedbackItem}
               >
                 <h2 className={styles.feedbackH2}>
