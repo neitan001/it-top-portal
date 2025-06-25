@@ -159,7 +159,7 @@
 }
 
 .scheduleItem {
-  background: var(--card-bg);
+  background: var(--schedule-bg);
   border-left: 4px solid var(--divider-color);
   border-radius: 12px;
   padding: 16px;

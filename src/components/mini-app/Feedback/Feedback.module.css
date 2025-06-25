@@ -3,6 +3,7 @@
     margin: 0 auto;
     padding: 20px;
     padding-bottom: 80px;
+    overflow-y: auto;
 }
 
 .feedbackHeader {
@@ -52,7 +53,6 @@
     flex-direction: column;
     gap: 15px;
     position: relative;
-    background: var(--card-bg);
     border-radius: 14px;
     padding: 16px;
     backdrop-filter: blur(20px);
@@ -67,7 +67,7 @@
     left: -10px;
     right: -10px;
     bottom: -10px;
-    background: var(--card-bg);
+    background: var(--label-bg);
     border-radius: 14px;
     z-index: -1;
 }
@@ -79,7 +79,7 @@
 }
 
 .feedbackItem {
-    background: var(--label-bg);
+    background: var(--feedback-item-bg);
     border-radius: 12px;
     padding: 16px;
     animation: appleScaleIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
