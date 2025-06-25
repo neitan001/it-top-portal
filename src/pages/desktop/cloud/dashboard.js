@@ -6,6 +6,25 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import styles from '@/styles/cloud/Dashboard.module.css';
 import SearchPanel from '@/components/cloud/SearchPanel';
 import Swal from 'sweetalert2';
+import Head from 'next/head';
+
+// Toast-уведомления
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  width: '380px',
+  padding: '0.8rem',
+  background: '#1a1a1a',
+  color: 'white',
+  iconColor: '#F32B3B',
+  timer: 3000,
+  timerProgressBar: true,
+  showConfirmButton: false,
+  didOpen: (toast) => {
+    toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
+    toast.style.borderRadius = '8px';
+  }
+});
 
 export default function Dashboard() {
   const router = useRouter();
@@ -142,7 +161,9 @@ export default function Dashboard() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
     const formData = new FormData();
-    formData.append('files[]', files[0]);
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files[]', files[i]);
+    }
     try {
       const res = await fetch('/api/cloud/files/upload', {
         method: 'POST',
@@ -150,11 +171,10 @@ export default function Dashboard() {
         credentials: 'include',
       });
       if (res.ok) {
-        Swal.fire({
-          title: 'Файл успешно загружен!',
-          text: 'Файл успешно загружен на сервер.',
+        Toast.fire({
           icon: 'success',
-          confirmButtonText: 'ОК'
+          title: `Загружено ${files.length} файлов`,
+          timer: 2000
         });
         if (isAuthenticated) {
           const fetchFiles = async () => {

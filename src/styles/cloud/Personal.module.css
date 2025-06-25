@@ -544,42 +544,131 @@
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-10px);
   transition: 
-    max-height 0.3s ease-in-out,
-    opacity 0.3s ease-in-out,
-    transform 0.3s ease-in-out,
-    padding 0.3s ease-in-out,
-    margin 0.3s ease-in-out;
+    max-height 0.3s ease-out,
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out,
+    padding 0.3s ease-out,
+    margin 0.3s ease-out;
   padding: 0;
-  margin: 0 0 0 0;
+  margin: 0;
   will-change: transform, opacity, max-height;
 }
 
-.bulkButton {
-  padding: 8px 16px;
-  background: rgba(243, 43, 59, 0.2);
-  color: white;
-  border: 1px solid #F32B3B;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.6s;
-}
-
-.bulkButton:hover {
-  background: rgba(243, 43, 59, 0.3);
+.bulkActions.animateOut {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  padding: 0;
+  margin: 0;
 }
 
 .bulkActions.show {
-  max-height: 100px;
+  max-height: 60px;
   opacity: 1;
   transform: translateY(0);
   padding: 10px;
   margin: 0 0 16px 0;
 }
 
+.bulkButton {
+  margin: 0;
+  height: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(243, 43, 59, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(243, 43, 59, 0.5);
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.bulkButton:hover {
+  background-color: rgba(243, 43, 59, 0.2);
+}
+
 .filesContainer {
-  transition: margin-top 0.3s ease-in-out;
+  margin-top: 20px;
+}
+
+.filesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.headerButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.resetButtonContainer {
+  opacity: 1;
+  transform: translateY(0);
+  transition: 
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out;
+  will-change: transform, opacity;
+}
+
+.resetButtonContainer.animateOut {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.resetButton {
+  margin: 0;
+  height: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.resetButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.selectAllButton {
+  margin: 0;
+  height: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(243, 43, 59, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(243, 43, 59, 0.5);
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.selectAllButton:hover {
+  background-color: rgba(243, 43, 59, 0.2);
 }
 
 .fileCard {

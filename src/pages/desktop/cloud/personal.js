@@ -18,10 +18,15 @@ export default function Personal() {
     const [files, setFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState(new Set());
-    const originalSwalFire = Swal.fire.bind(Swal);
     const [showBulkActions, setShowBulkActions] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [isResetAnimatingOut, setIsResetAnimatingOut] = useState(false);
+    const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+    const originalSwalFire = Swal.fire.bind(Swal);
     const [showSearchPanel, setShowSearchPanel] = useState(false);
+    const [isSelecting, setIsSelecting] = useState(false);
+    const [selectionStart, setSelectionStart] = useState(null);
+    const [selectionEnd, setSelectionEnd] = useState(null);
 
 useEffect(() => {
   if (selectedFiles.size > 0) {
@@ -36,6 +41,18 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }
 }, [selectedFiles, showBulkActions]);
+
+useEffect(() => {
+  if (selectedFiles.size === 0 && !isResetAnimatingOut) {
+    setIsResetAnimatingOut(true);
+    const timer = setTimeout(() => {
+      setIsResetAnimatingOut(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  } else if (selectedFiles.size > 0) {
+    setIsResetAnimatingOut(false);
+  }
+}, [selectedFiles, isResetAnimatingOut]);
 
 Swal.fire = function(config) {
   const darkTheme = {
@@ -290,14 +307,32 @@ const handleFilesUpload = useCallback(async (formData) => {
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
+                    let data;
+                    try {
+                        const responseText = await res.text();
+                        console.log('Files response text:', responseText);
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('JSON parse error in fetchFiles:', parseError);
+                        setError('Ошибка парсинга ответа сервера');
+                        return;
+                    }
                     setFiles(data.files);
                 } else {
-                    setError('Не удалось загрузить данные файлов');
+                    let errorData;
+                    try {
+                        const responseText = await res.text();
+                        console.log('Files error response text:', responseText);
+                        errorData = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('JSON parse error in fetchFiles error:', parseError);
+                        errorData = { error: 'Неизвестная ошибка сервера' };
+                    }
+                    setError(errorData.error || 'Не удалось загрузить данные файлов');
                 }
             } catch (err) {
+                console.error('Network error in fetchFiles:', err);
                 setError('Ошибка сети при загрузке файлов');
-                console.error('Ошибка при загрузке файлов:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -305,6 +340,19 @@ const handleFilesUpload = useCallback(async (formData) => {
 
         fetchFiles();
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setIsSelecting(false);
+            setSelectionStart(null);
+            setSelectionEnd(null);
+        };
+
+        document.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => {
+            document.removeEventListener('mouseup', handleGlobalMouseUp);
+        };
+    }, []);
 
     if (isAuthenticated === null) {
         return null;
@@ -339,7 +387,16 @@ const handleFilesUpload = useCallback(async (formData) => {
           });
           window.location.reload();
         } else {
-          const errorData = await res.json();
+          let errorData;
+          try {
+            const responseText = await res.text();
+            console.log('Response text:', responseText);
+            errorData = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            errorData = { error: 'Ошибка парсинга ответа сервера' };
+          }
+          
           Toast.fire({
             icon: 'error',
             title: 'Ошибка',
@@ -347,6 +404,7 @@ const handleFilesUpload = useCallback(async (formData) => {
           });
         }
       } catch (error) {
+        console.error('Upload error:', error);
         Toast.fire({
           position: "top-end",
           icon: 'error',
@@ -357,7 +415,6 @@ const handleFilesUpload = useCallback(async (formData) => {
           toast: true,
           width: '380px'
         });
-        console.error(error);
       }
     };
     const handleLogout = async () => {
@@ -376,83 +433,154 @@ const handleFilesUpload = useCallback(async (formData) => {
     };
 
     const toggleFileSelection = (fileId) => {
-  setSelectedFiles(prev => {
-    const newSelection = new Set(prev);
-    if (newSelection.has(fileId)) {
-      newSelection.delete(fileId);
-    } else {
-      newSelection.add(fileId);
-    }
-    return newSelection;
-  });
-};
-const selectedCount = Object.keys(selectedFiles).length;
+        setSelectedFiles(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(fileId)) {
+                newSelection.delete(fileId);
+            } else {
+                newSelection.add(fileId);
+            }
+            return newSelection;
+        });
+    };
 
-const handleBulkDownload = async () => {
-  if (selectedFiles.size === 0) return;
+    const selectAllFiles = () => {
+        if (selectedFiles.size === files.length) {
+            // Если все файлы уже выделены, снимаем выделение
+            setSelectedFiles(new Set());
+        } else {
+            // Иначе выделяем все файлы
+            setSelectedFiles(new Set(files.map(file => file.id)));
+        }
+    };
 
-  try {
-    // Для каждого выбранного файла создаем скрытую ссылку и кликаем по ней
-    Array.from(selectedFiles).forEach(async fileId => {
-      const file = files.find(f => f.id === fileId);
-      if (file) {
-        await downloadFile(file.id, file.original_name);
+    const handleMouseDown = (e, fileId) => {
+        if (e.button === 0) { // Левая кнопка мыши
+            e.preventDefault(); // Предотвращаем выделение текста
+            setIsSelecting(true);
+            setSelectionStart(fileId);
+            setSelectionEnd(fileId);
+            
+            // Если нажат Ctrl/Cmd, добавляем к выделению, иначе заменяем
+            if (e.ctrlKey || e.metaKey) {
+                setSelectedFiles(prev => {
+                    const newSelection = new Set(prev);
+                    if (newSelection.has(fileId)) {
+                        newSelection.delete(fileId);
+                    } else {
+                        newSelection.add(fileId);
+                    }
+                    return newSelection;
+                });
+            } else if (e.shiftKey && selectedFiles.size > 0) {
+                // Если нажат Shift, выделяем диапазон
+                const lastSelected = Array.from(selectedFiles).pop();
+                const startIndex = files.findIndex(f => f.id === lastSelected);
+                const endIndex = files.findIndex(f => f.id === fileId);
+                
+                if (startIndex !== -1 && endIndex !== -1) {
+                    const minIndex = Math.min(startIndex, endIndex);
+                    const maxIndex = Math.max(startIndex, endIndex);
+                    const filesToSelect = files.slice(minIndex, maxIndex + 1).map(f => f.id);
+                    setSelectedFiles(new Set(filesToSelect));
+                }
+            } else {
+                // Обычный клик - выделяем только этот файл
+                setSelectedFiles(new Set([fileId]));
+            }
+        }
+    };
+
+    const handleMouseEnter = (fileId) => {
+        if (isSelecting) {
+            setSelectionEnd(fileId);
+            
+            // Выделяем все файлы между начальной и текущей позицией
+            const startIndex = files.findIndex(f => f.id === selectionStart);
+            const endIndex = files.findIndex(f => f.id === fileId);
+            
+            if (startIndex !== -1 && endIndex !== -1) {
+                const minIndex = Math.min(startIndex, endIndex);
+                const maxIndex = Math.max(startIndex, endIndex);
+                const filesToSelect = files.slice(minIndex, maxIndex + 1).map(f => f.id);
+                setSelectedFiles(new Set(filesToSelect));
+            }
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsSelecting(false);
+        setSelectionStart(null);
+        setSelectionEnd(null);
+    };
+
+    const selectedCount = Object.keys(selectedFiles).length;
+
+    const handleBulkDownload = async () => {
+      if (selectedFiles.size === 0) return;
+
+      try {
+        // Для каждого выбранного файла создаем скрытую ссылку и кликаем по ней
+        Array.from(selectedFiles).forEach(async fileId => {
+          const file = files.find(f => f.id === fileId);
+          if (file) {
+            await downloadFile(file.id, file.original_name);
+          }
+        });
+
+        Toast.fire({
+          icon: 'success',
+          title: `Начато скачивание ${selectedFiles.size} файлов`
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Ошибка',
+          text: 'Не удалось скачать выбранные файлы'
+        });
       }
-    });
+    };
 
-    Toast.fire({
-      icon: 'success',
-      title: `Начато скачивание ${selectedFiles.size} файлов`
-    });
-  } catch (error) {
-    Toast.fire({
-      icon: 'error',
-      title: 'Ошибка',
-      text: 'Не удалось скачать выбранные файлы'
-    });
-  }
-};
+    const handleBulkDelete = async () => {
+      if (selectedFiles.size === 0) return;
 
-const handleBulkDelete = async () => {
-  if (selectedFiles.size === 0) return;
+      const result = await Swal.fire({
+        title: 'Удалить выбранные файлы?',
+        text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Удалить',
+        cancelButtonText: 'Отмена',
+        customClass: {
+          popup: 'swal-dark',
+          confirmButton: 'swal-dark-confirm',
+          cancelButton: 'swal-dark-cancel'
+        }
+      });
 
-  const result = await Swal.fire({
-    title: 'Удалить выбранные файлы?',
-    text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Удалить',
-    cancelButtonText: 'Отмена',
-    customClass: {
-      popup: 'swal-dark',
-      confirmButton: 'swal-dark-confirm',
-      cancelButton: 'swal-dark-cancel'
-    }
-  });
+      if (!result.isConfirmed) return;
 
-  if (!result.isConfirmed) return;
+      try {
+        const deletePromises = Array.from(selectedFiles).map(fileId => 
+          fetch(`/api/cloud/files/${fileId}`, { method: 'DELETE' })
+        );
 
-  try {
-    const deletePromises = Array.from(selectedFiles).map(fileId => 
-      fetch(`/api/cloud/files/${fileId}`, { method: 'DELETE' })
-    );
-
-    await Promise.all(deletePromises);
-    setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
-    setSelectedFiles(new Set());
-    
-    Toast.fire({
-      icon: 'success',
-      title: `Удалено ${selectedFiles.size} файлов`
-    });
-  } catch (error) {
-    Toast.fire({
-      icon: 'error',
-      title: 'Ошибка',
-      text: 'Не удалось удалить выбранные файлы'
-    });
-  }
-};
+        await Promise.all(deletePromises);
+        setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
+        setSelectedFiles(new Set());
+        
+        Toast.fire({
+          icon: 'success',
+          title: `Удалено ${selectedFiles.size} файлов`
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Ошибка',
+          text: 'Не удалось удалить выбранные файлы'
+        });
+      }
+    };
 
     const Logo = () => (
         <svg width="81" height="41" viewBox="0 0 81 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -640,40 +768,56 @@ const handleBulkDelete = async () => {
           <small>или нажмите &apos;Загрузить&apos; выше</small>
         </div>
 
-        {selectedFiles.size > 0 ? (
-  <div className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''}`}>
-  <button 
-    onClick={handleBulkDownload}
-    className={styles.bulkButton}
-  >
-    Скачать выбранные ({selectedFiles.size})
-  </button>
-  <button 
-    onClick={handleBulkDelete}
-    className={styles.bulkButton}
-  >
-    Удалить выбранные ({selectedFiles.size})
-  </button>
-  <button 
-    onClick={() => setSelectedFiles(new Set())}
-    className={styles.bulkButton}
-  >
-    Сбросить выбор
-  </button>
-</div>
-) : null}
+        <div 
+          className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''} ${isAnimatingOut ? styles.animateOut : ''}`}
+        >
+          <button 
+            onClick={handleBulkDownload}
+            className={styles.bulkButton}
+          >
+            Скачать выбранные ({selectedFiles.size})
+          </button>
+          <button 
+            onClick={handleBulkDelete}
+            className={styles.bulkButton}
+          >
+            Удалить выбранные ({selectedFiles.size})
+          </button>
+        </div>
 
         <div className={styles.filesContainer}>
-          <h2 className={styles.sectionTitle}>Ваши файлы</h2>
+          <div className={styles.filesHeader}>
+            <h2 className={styles.sectionTitle}>Ваши файлы</h2>
+            <div className={styles.headerButtons}>
+              {selectedFiles.size > 0 && (
+                <div className={`${styles.resetButtonContainer} ${isResetAnimatingOut ? styles.animateOut : ''}`}>
+                  <button 
+                    onClick={() => setSelectedFiles(new Set())}
+                    className={styles.resetButton}
+                  >
+                    Сбросить выбор
+                  </button>
+                </div>
+              )}
+              <button 
+                onClick={selectAllFiles}
+                className={styles.selectAllButton}
+              >
+                Выделить всё
+              </button>
+            </div>
+          </div>
           {files.length === 0 && !isLoading ? (
             <div className={styles.emptyState}>Файлы отсутствуют</div>
           ) : (
-            <div className={styles.filesGrid}>
+            <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()}>
               {files.map((file) => (
                 <div 
                   key={file.id}
                   className={`${styles.fileCard} ${selectedFiles.has(file.id) ? styles.selected : ''}`}
-                  onClick={() => toggleFileSelection(file.id)}
+                  onMouseDown={(e) => handleMouseDown(e, file.id)}
+                  onMouseEnter={() => handleMouseEnter(file.id)}
+                  onContextMenu={(e) => e.preventDefault()}
                 >
                   <p className={styles.fileName}>{file.original_name}</p>
                   <p className={styles.fileSize}>
