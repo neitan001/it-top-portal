@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
 import styles from '@/styles/cloud/Personal.module.css';
@@ -22,77 +23,87 @@ export default function Personal() {
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [isResetAnimatingOut, setIsResetAnimatingOut] = useState(false);
     const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+    const [previewFile, setPreviewFile] = useState(null);
+    const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
     const originalSwalFire = Swal.fire.bind(Swal);
     const [showSearchPanel, setShowSearchPanel] = useState(false);
     const [isSelecting, setIsSelecting] = useState(false);
     const [selectionStart, setSelectionStart] = useState(null);
     const [selectionEnd, setSelectionEnd] = useState(null);
 
-useEffect(() => {
-  if (selectedFiles.size > 0) {
-    setShowBulkActions(true);
-    setIsAnimatingOut(false);
-  } else if (showBulkActions) {
-    setIsAnimatingOut(true);
-    const timer = setTimeout(() => {
-      setShowBulkActions(false);
-      setIsAnimatingOut(false);
-    }, 300); // Должно совпадать с временем transition в CSS
-    return () => clearTimeout(timer);
-  }
-}, [selectedFiles, showBulkActions]);
+    const handleClickOutside = useCallback((e) => {
+        // Если клик не по файлу и не по предпросмотру, снимаем выделение и закрываем предпросмотр
+        if (!e.target.closest(`.${styles.fileCard}`) && !e.target.closest(`.${styles.previewContainer}`)) {
+            setSelectedFiles(new Set());
+            setPreviewFile(null);
+        }
+    }, []);
 
-useEffect(() => {
-  if (selectedFiles.size === 0 && !isResetAnimatingOut) {
-    setIsResetAnimatingOut(true);
-    const timer = setTimeout(() => {
-      setIsResetAnimatingOut(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  } else if (selectedFiles.size > 0) {
-    setIsResetAnimatingOut(false);
-  }
-}, [selectedFiles, isResetAnimatingOut]);
+    useEffect(() => {
+        if (selectedFiles.size > 0) {
+            setShowBulkActions(true);
+            setIsAnimatingOut(false);
+        } else if (showBulkActions) {
+            setIsAnimatingOut(true);
+            const timer = setTimeout(() => {
+                setShowBulkActions(false);
+                setIsAnimatingOut(false);
+            }, 300); // Должно совпадать с временем transition в CSS
+            return () => clearTimeout(timer);
+        }
+    }, [selectedFiles, showBulkActions]);
 
-Swal.fire = function(config) {
-  const darkTheme = {
-    background: '#1a1a1a',
-    color: 'white',
-    confirmButtonColor: '#F32B3B',
-    cancelButtonColor: '#333',
-    iconColor: '#F32B3B',
-    customClass: {
-      popup: 'swal-dark',
-      confirmButton: 'swal-dark-confirm',
-      cancelButton: 'swal-dark-cancel'
-    }
-  };
-  
-  return originalSwalFire({
-    ...darkTheme,
-    ...config
-  });
-};
+    useEffect(() => {
+        if (selectedFiles.size === 0 && !isResetAnimatingOut) {
+            setIsResetAnimatingOut(true);
+            const timer = setTimeout(() => {
+                setIsResetAnimatingOut(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        } else if (selectedFiles.size > 0) {
+            setIsResetAnimatingOut(false);
+        }
+    }, [selectedFiles, isResetAnimatingOut]);
 
-// Toast-уведомления
-const Toast = Swal.mixin({
-  toast: true,
-  position: 'top-end',
-  width: '380px',
-  padding: '0.8rem',
-  background: '#1a1a1a',
-  color: 'white',
-  iconColor: '#F32B3B',
-  timer: 3000,
-  timerProgressBar: true,
-  showConfirmButton: false,
-  didOpen: (toast) => {
-    toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
-    toast.style.borderRadius = '8px';
-  }
-});
+    Swal.fire = function(config) {
+        const darkTheme = {
+            background: '#1a1a1a',
+            color: 'white',
+            confirmButtonColor: '#F32B3B',
+            cancelButtonColor: '#333',
+            iconColor: '#F32B3B',
+            customClass: {
+                popup: 'swal-dark',
+                confirmButton: 'swal-dark-confirm',
+                cancelButton: 'swal-dark-cancel'
+            }
+        };
+        
+        return originalSwalFire({
+            ...darkTheme,
+            ...config
+        });
+    };
 
-Swal.fire = Toast.fire;
+    // Toast-уведомления
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        width: '380px',
+        padding: '0.8rem',
+        background: '#1a1a1a',
+        color: 'white',
+        iconColor: '#F32B3B',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        didOpen: (toast) => {
+            toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
+            toast.style.borderRadius = '8px';
+        }
+    });
+
+    Swal.fire = Toast.fire;
 
     useEffect(() => {
         async function checkAuth() {
@@ -153,47 +164,47 @@ Swal.fire = Toast.fire;
         }
     };
 
-      const deleteFile = async (fileId) => {
-          const result = await Swal.fire({
-              title: 'Удалить файл?',
-              text: 'Вы уверены, что хотите удалить этот файл?',
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonText: 'Удалить',
-              cancelButtonText: 'Отмена',
-              customClass: {
-              popup: 'swal-dark',
-              confirmButton: 'swal-dark-confirm',
-              cancelButton: 'swal-dark-cancel',
-              timer: undefined
-              }
-          });
+    const deleteFile = async (fileId) => {
+        const result = await Swal.fire({
+            title: 'Удалить файл?',
+            text: 'Вы уверены, что хотите удалить этот файл?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Удалить',
+            cancelButtonText: 'Отмена',
+            customClass: {
+                popup: 'swal-dark',
+                confirmButton: 'swal-dark-confirm',
+                cancelButton: 'swal-dark-cancel',
+                timer: undefined
+            }
+        });
 
-          if (!result.isConfirmed) return;
+        if (!result.isConfirmed) return;
 
-          try {
-              const response = await fetch(`/api/cloud/files/${fileId}`, {
-                  method: 'DELETE',
-              });
+        try {
+            const response = await fetch(`/api/cloud/files/${fileId}`, {
+                method: 'DELETE',
+            });
 
-              if (!response.ok) {
-                  throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-              }
+            if (!response.ok) {
+                throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+            }
 
-              setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
-              Toast.fire({
-                  icon: 'success',
-                  title: 'Файл успешно удалён',
-                  timer: 2000
-              });
-          } catch (error) {
-              Toast.fire({
-                  icon: 'error',
-                  title: 'Ошибка',
-                  text: 'Не удалось удалить файл: ' + error.message
-              });
-          }
-      };
+            setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+            Toast.fire({
+                icon: 'success',
+                title: 'Файл успешно удалён',
+                timer: 2000
+            });
+        } catch (error) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Не удалось удалить файл: ' + error.message
+            });
+        }
+    };
 
     const categorizeFiles = (files) => {
         const categories = {
@@ -228,26 +239,25 @@ Swal.fire = Toast.fire;
         };
     };
 
-            
     const handleDragEnter = (e) => {
-      e.preventDefault();
-      if (!isDragging && e.dataTransfer.types.includes('Files')) {
-        setIsDragging(true);
-      }
+        e.preventDefault();
+        if (!isDragging && e.dataTransfer.types.includes('Files')) {
+            setIsDragging(true);
+        }
     };
 
     const handleDragLeave = (e) => {
-      if (!e.currentTarget.contains(e.relatedTarget)) {
-        setIsDragging(false);
-      }
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setIsDragging(false);
+        }
     };
 
     const handleDragOver = (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
     };
     
-const handleFilesUpload = useCallback(async (formData) => {
+    const handleFilesUpload = useCallback(async (formData) => {
         try {
             const res = await fetch('/api/cloud/files/upload', {
                 method: 'POST',
@@ -348,11 +358,17 @@ const handleFilesUpload = useCallback(async (formData) => {
             setSelectionEnd(null);
         };
 
+        const handleGlobalClick = (e) => {
+            handleClickOutside(e);
+        };
+
         document.addEventListener('mouseup', handleGlobalMouseUp);
+        document.addEventListener('click', handleGlobalClick);
         return () => {
             document.removeEventListener('mouseup', handleGlobalMouseUp);
+            document.removeEventListener('click', handleGlobalClick);
         };
-    }, []);
+    }, [handleClickOutside]);
 
     if (isAuthenticated === null) {
         return null;
@@ -365,57 +381,57 @@ const handleFilesUpload = useCallback(async (formData) => {
     };
 
     const handleFileChange = async (event) => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
 
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files[]', files[i]);
-      }
-
-      try {
-        const res = await fetch('/api/cloud/files/upload', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-        });
-
-        if (res.ok) {
-          Toast.fire({
-            icon: 'success',
-            title: `Загружено ${files.length} файлов`,
-          });
-          window.location.reload();
-        } else {
-          let errorData;
-          try {
-            const responseText = await res.text();
-            console.log('Response text:', responseText);
-            errorData = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            errorData = { error: 'Ошибка парсинга ответа сервера' };
-          }
-          
-          Toast.fire({
-            icon: 'error',
-            title: 'Ошибка',
-            text: errorData.error || 'Не удалось загрузить файлы',
-          });
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files[]', files[i]);
         }
-      } catch (error) {
-        console.error('Upload error:', error);
-        Toast.fire({
-          position: "top-end",
-          icon: 'error',
-          title: 'Ошибка',
-          text: 'Ошибка сети при загрузке файлов',
-          timer: 2000,
-          showConfirmButton: false,
-          toast: true,
-          width: '380px'
-        });
-      }
+
+        try {
+            const res = await fetch('/api/cloud/files/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            });
+
+            if (res.ok) {
+                Toast.fire({
+                    icon: 'success',
+                    title: `Загружено ${files.length} файлов`,
+                });
+                window.location.reload();
+            } else {
+                let errorData;
+                try {
+                    const responseText = await res.text();
+                    console.log('Response text:', responseText);
+                    errorData = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    errorData = { error: 'Ошибка парсинга ответа сервера' };
+                }
+                
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: errorData.error || 'Не удалось загрузить файлы',
+                });
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            Toast.fire({
+                position: "top-end",
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Ошибка сети при загрузке файлов',
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                width: '380px'
+            });
+        }
     };
     const handleLogout = async () => {
         try {
@@ -485,18 +501,36 @@ const handleFilesUpload = useCallback(async (formData) => {
                     setSelectedFiles(new Set(filesToSelect));
                 }
             } else {
-                // Обычный клик - если файл уже выделен, снимаем выделение, иначе выделяем только этот файл
-                if (selectedFiles.has(fileId)) {
-                    setSelectedFiles(prev => {
-                        const newSelection = new Set(prev);
-                        newSelection.delete(fileId);
-                        return newSelection;
-                    });
-                } else {
-                    setSelectedFiles(new Set([fileId]));
-                }
+                // Обычный клик - выделяем только этот файл
+                setSelectedFiles(new Set([fileId]));
             }
         }
+    };
+
+    const handleDoubleClick = (e, file) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Позиция для предпросмотра
+        const rect = e.currentTarget.getBoundingClientRect();
+        const previewWidth = 400; // Примерная ширина предпросмотра
+        const windowWidth = window.innerWidth;
+        
+        let x = rect.right + 10;
+        let y = rect.top;
+        
+        // Если предпросмотр уйдет за правый край, показываем слева от файла
+        if (x + previewWidth > windowWidth) {
+            x = rect.left - previewWidth - 10;
+        }
+        
+        // Если предпросмотр уйдет за верхний край, корректируем Y
+        if (y < 0) {
+            y = 10;
+        }
+        
+        setPreviewPosition({ x, y });
+        setPreviewFile(file);
     };
 
     const handleMouseEnter = (fileId) => {
@@ -525,69 +559,69 @@ const handleFilesUpload = useCallback(async (formData) => {
     const selectedCount = Object.keys(selectedFiles).length;
 
     const handleBulkDownload = async () => {
-      if (selectedFiles.size === 0) return;
+        if (selectedFiles.size === 0) return;
 
-      try {
-        // Для каждого выбранного файла создаем скрытую ссылку и кликаем по ней
-        Array.from(selectedFiles).forEach(async fileId => {
-          const file = files.find(f => f.id === fileId);
-          if (file) {
-            await downloadFile(file.id, file.original_name);
-          }
-        });
+        try {
+            // Для каждого выбранного файла создаем скрытую ссылку и кликаем по ней
+            Array.from(selectedFiles).forEach(async fileId => {
+                const file = files.find(f => f.id === fileId);
+                if (file) {
+                    await downloadFile(file.id, file.original_name);
+                }
+            });
 
-        Toast.fire({
-          icon: 'success',
-          title: `Начато скачивание ${selectedFiles.size} файлов`
-        });
-      } catch (error) {
-        Toast.fire({
-          icon: 'error',
-          title: 'Ошибка',
-          text: 'Не удалось скачать выбранные файлы'
-        });
-      }
+            Toast.fire({
+                icon: 'success',
+                title: `Начато скачивание ${selectedFiles.size} файлов`
+            });
+        } catch (error) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Не удалось скачать выбранные файлы'
+            });
+        }
     };
 
     const handleBulkDelete = async () => {
-      if (selectedFiles.size === 0) return;
+        if (selectedFiles.size === 0) return;
 
-      const result = await Swal.fire({
-        title: 'Удалить выбранные файлы?',
-        text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Удалить',
-        cancelButtonText: 'Отмена',
-        customClass: {
-          popup: 'swal-dark',
-          confirmButton: 'swal-dark-confirm',
-          cancelButton: 'swal-dark-cancel'
+        const result = await Swal.fire({
+            title: 'Удалить выбранные файлы?',
+            text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Удалить',
+            cancelButtonText: 'Отмена',
+            customClass: {
+                popup: 'swal-dark',
+                confirmButton: 'swal-dark-confirm',
+                cancelButton: 'swal-dark-cancel'
+            }
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const deletePromises = Array.from(selectedFiles).map(fileId => 
+                fetch(`/api/cloud/files/${fileId}`, { method: 'DELETE' })
+            );
+
+            await Promise.all(deletePromises);
+            setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
+            setSelectedFiles(new Set());
+            
+            Toast.fire({
+                icon: 'success',
+                title: `Удалено ${selectedFiles.size} файлов`
+            });
+        } catch (error) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Не удалось удалить выбранные файлы'
+            });
         }
-      });
-
-      if (!result.isConfirmed) return;
-
-      try {
-        const deletePromises = Array.from(selectedFiles).map(fileId => 
-          fetch(`/api/cloud/files/${fileId}`, { method: 'DELETE' })
-        );
-
-        await Promise.all(deletePromises);
-        setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
-        setSelectedFiles(new Set());
-        
-        Toast.fire({
-          icon: 'success',
-          title: `Удалено ${selectedFiles.size} файлов`
-        });
-      } catch (error) {
-        Toast.fire({
-          icon: 'error',
-          title: 'Ошибка',
-          text: 'Не удалось удалить выбранные файлы'
-        });
-      }
     };
 
     const Logo = () => (
@@ -657,203 +691,255 @@ const handleFilesUpload = useCallback(async (formData) => {
     );
 
     return (
-  <div className={styles.dashboardLayout}>
-    <nav className={styles.dashboardNav}>
-      <div className={styles.navHeader}>
-        <div className={styles.logoContainerDashboard}>
-          <Logo />
-        </div>
-      </div>
-
-      <ul className={styles.navMenu}>
-        <li className={styles.navItem}>
-          <Link href="/desktop/cloud/dashboard" legacyBehavior>
-            <a>
-              <HomeIcon />
-              <span>Главная</span>
-            </a>
-          </Link>
-        </li>
-
-        <li className={styles.navItem}>
-          <a href="#" onClick={e => { e.preventDefault(); setShowSearchPanel(true); }}>
-            <SearchIcon />
-            <span>Поиск</span>
-          </a>
-        </li>
-
-        <div className={styles.navDivider}></div>
-
-        <li className={`${styles.navItem} ${styles.navHeaderItem}`}>
-          <a href="#" onClick={() => setExpandedSpaces(!expandedSpaces)}>
-            <WorkspaceIcon />
-            <span>Рабочие пространства</span>
-            <ChevronIcon expanded={expandedSpaces} />
-          </a>
-        </li>
-
-        {expandedSpaces && (
-          <>
-            <li className={`${styles.navItem} ${styles.navItemActive} ${styles.navSubitem}`}>
-              <Link href="/desktop/cloud/personal" legacyBehavior>
-                <a>Личное</a>
-              </Link>
-            </li>
-            <li className={`${styles.navItem} ${styles.navSubitem}`}>
-              <Link href="/desktop/cloud/common" legacyBehavior>
-                <a>Общие файлы</a>
-              </Link>
-            </li>
-          </>
-        )}
-      </ul>
-
-      <div className={styles.navFooter}>
-        <a href="#" className={styles.settingsLink}>
-          <SettingsIcon />
-          <span>Настройки</span>
-        </a>
-        <a href="#" className={styles.logoutLink} onClick={(e) => {
-          e.preventDefault();
-          handleLogout();
-        }}>
-          <LogoutIcon />
-        </a>
-      </div>
-    </nav>
-
-    <main className={styles.dashboardContent}>
-      {showSearchPanel && (
-        <SearchPanel onClose={() => setShowSearchPanel(false)} large files={files} />
-      )}
-      <div className={styles.topSection}>
-        <div className={styles.searchContainer}>
-          <div className={styles.searchBox}>
-            <SearchIcon />
-            <input
-              type="text"
-              placeholder="Поиск файлов, документов..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.glowInput}
-              onFocus={() => setShowSearchPanel(true)}
-              onClick={() => setShowSearchPanel(true)}
-            />
-          </div>
-        </div>
-
-        <div className={styles.userPanel}>
-          <button onClick={handleUploadClick} className={styles.uploadButton}>
-            <UploadIcon />
-            <span>Загрузить</span>
-          </button>
-
-          <input
-            type="file"
-            multiple
-            style={{ display: 'none' }}
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
-
-          <div className={styles.userInfo}>
-            <span className={styles.username}>{userName}</span>
-            <UserAvatar />
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.mt8}>
-        <div 
-          className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          >
-          <UploadIcon />
-          <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
-          <small>или нажмите &apos;Загрузить&apos; выше</small>
-        </div>
-
-        <div 
-          className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''} ${isAnimatingOut ? styles.animateOut : ''}`}
-        >
-          <button 
-            onClick={handleBulkDownload}
-            className={styles.bulkButton}
-          >
-            Скачать выбранные ({selectedFiles.size})
-          </button>
-          <button 
-            onClick={handleBulkDelete}
-            className={styles.bulkButton}
-          >
-            Удалить выбранные ({selectedFiles.size})
-          </button>
-        </div>
-
-        <div className={styles.filesContainer}>
-          <div className={styles.filesHeader}>
-            <h2 className={styles.sectionTitle}>Ваши файлы</h2>
-            <div className={styles.headerButtons}>
-              {selectedFiles.size > 0 && (
-                <div className={`${styles.resetButtonContainer} ${isResetAnimatingOut ? styles.animateOut : ''}`}>
-                  <button 
-                    onClick={() => setSelectedFiles(new Set())}
-                    className={styles.resetButton}
-                  >
-                    Сбросить выбор
-                  </button>
+        <div className={styles.dashboardLayout}>
+            <nav className={styles.dashboardNav}>
+                <div className={styles.navHeader}>
+                    <div className={styles.logoContainerDashboard}>
+                        <Logo />
+                    </div>
                 </div>
-              )}
-              <button 
-                onClick={selectAllFiles}
-                className={styles.selectAllButton}
-              >
-                Выделить всё
-              </button>
-            </div>
-          </div>
-          {files.length === 0 && !isLoading ? (
-            <div className={styles.emptyState}>Файлы отсутствуют</div>
-          ) : (
-            <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()}>
-              {files.map((file) => (
-                <div 
-                  key={file.id}
-                  className={`${styles.fileCard} ${selectedFiles.has(file.id) ? styles.selected : ''}`}
-                  onMouseDown={(e) => handleMouseDown(e, file.id)}
-                  onMouseEnter={() => handleMouseEnter(file.id)}
-                  onContextMenu={(e) => e.preventDefault()}
-                >
-                  <p className={styles.fileName}>{file.original_name}</p>
-                  <p className={styles.fileSize}>
-                    {file.size > 1024 * 1024
-                      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-                      : `${(file.size / 1024).toFixed(1)} KB`}
-                  </p>
-                  <div className={styles.fileActions}>
-                    <button onClick={(e) => {
-                      e.stopPropagation();
-                      downloadFile(file.id, file.original_name);
-                    }} className={styles.downloadButton}>
-                      Скачать
-                    </button>
-                    <button onClick={(e) => {
-                      e.stopPropagation();
-                      deleteFile(file.id);
-                    }} className={styles.deleteButton}>
-                      Удалить
-                    </button>
-                  </div>
+
+                <ul className={styles.navMenu}>
+                    <li className={styles.navItem}>
+                        <Link href="/desktop/cloud/dashboard" legacyBehavior>
+                            <a>
+                                <HomeIcon />
+                                <span>Главная</span>
+                            </a>
+                        </Link>
+                    </li>
+
+                    <li className={styles.navItem}>
+                        <a href="#" onClick={e => { e.preventDefault(); setShowSearchPanel(true); }}>
+                            <SearchIcon />
+                            <span>Поиск</span>
+                        </a>
+                    </li>
+
+                    <div className={styles.navDivider}></div>
+
+                    <li className={`${styles.navItem} ${styles.navHeaderItem}`}>
+                        <a href="#" onClick={() => setExpandedSpaces(!expandedSpaces)}>
+                            <WorkspaceIcon />
+                            <span>Рабочие пространства</span>
+                            <ChevronIcon expanded={expandedSpaces} />
+                        </a>
+                    </li>
+
+                    {expandedSpaces && (
+                        <>
+                            <li className={`${styles.navItem} ${styles.navItemActive} ${styles.navSubitem}`}>
+                                <Link href="/desktop/cloud/personal" legacyBehavior>
+                                    <a>Личное</a>
+                                </Link>
+                            </li>
+                            <li className={`${styles.navItem} ${styles.navSubitem}`}>
+                                <Link href="/desktop/cloud/common" legacyBehavior>
+                                    <a>Общие файлы</a>
+                                </Link>
+                            </li>
+                        </>
+                    )}
+                </ul>
+
+                <div className={styles.navFooter}>
+                    <a href="#" className={styles.settingsLink}>
+                        <SettingsIcon />
+                        <span>Настройки</span>
+                    </a>
+                    <a href="#" className={styles.logoutLink} onClick={(e) => {
+                        e.preventDefault();
+                        handleLogout();
+                    }}>
+                        <LogoutIcon />
+                    </a>
                 </div>
-              ))}
-            </div>
-          )}
+            </nav>
+
+            <main className={styles.dashboardContent}>
+                {showSearchPanel && (
+                    <SearchPanel onClose={() => setShowSearchPanel(false)} large files={files} />
+                )}
+                <div className={styles.topSection}>
+                    <div className={styles.searchContainer}>
+                        <div className={styles.searchBox}>
+                            <SearchIcon />
+                            <input
+                                type="text"
+                                placeholder="Поиск файлов, документов..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={styles.glowInput}
+                                onFocus={() => setShowSearchPanel(true)}
+                                onClick={() => setShowSearchPanel(true)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.userPanel}>
+                        <button onClick={handleUploadClick} className={styles.uploadButton}>
+                            <UploadIcon />
+                            <span>Загрузить</span>
+                        </button>
+
+                        <input
+                            type="file"
+                            multiple
+                            style={{ display: 'none' }}
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                        />
+
+                        <div className={styles.userInfo}>
+                            <span className={styles.username}>{userName}</span>
+                            <UserAvatar />
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.mt8}>
+                    <div 
+                        className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+                        onDragEnter={handleDragEnter}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        <UploadIcon />
+                        <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
+                        <small>или нажмите &apos;Загрузить&apos; выше</small>
+                    </div>
+
+                    <div 
+                        className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''} ${isAnimatingOut ? styles.animateOut : ''}`}
+                    >
+                        <button 
+                            onClick={handleBulkDownload}
+                            className={styles.bulkButton}
+                        >
+                            Скачать выбранные ({selectedFiles.size})
+                        </button>
+                        <button 
+                            onClick={handleBulkDelete}
+                            className={styles.bulkButton}
+                        >
+                            Удалить выбранные ({selectedFiles.size})
+                        </button>
+                    </div>
+
+                    <div className={styles.filesContainer}>
+                        <div className={styles.filesHeader}>
+                            <h2 className={styles.sectionTitle}>Ваши файлы</h2>
+                            <div className={styles.headerButtons}>
+                                {selectedFiles.size > 0 && (
+                                    <div className={`${styles.resetButtonContainer} ${isResetAnimatingOut ? styles.animateOut : ''}`}>
+                                        <button 
+                                            onClick={() => setSelectedFiles(new Set())}
+                                            className={styles.resetButton}
+                                        >
+                                            Сбросить выбор
+                                        </button>
+                                    </div>
+                                )}
+                                <button 
+                                    onClick={selectAllFiles}
+                                    className={styles.selectAllButton}
+                                >
+                                    Выделить всё
+                                </button>
+                            </div>
+                        </div>
+                        {files.length === 0 && !isLoading ? (
+                            <div className={styles.emptyState}>Файлы отсутствуют</div>
+                        ) : (
+                            <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()}>
+                                {files.map((file) => (
+                                    <div 
+                                        key={file.id}
+                                        className={`${styles.fileCard} ${selectedFiles.has(file.id) ? styles.selected : ''}`}
+                                        onMouseDown={(e) => handleMouseDown(e, file.id)}
+                                        onMouseEnter={() => handleMouseEnter(file.id)}
+                                        onDoubleClick={(e) => handleDoubleClick(e, file)}
+                                        onContextMenu={(e) => e.preventDefault()}
+                                    >
+                                        <p className={styles.fileName}>{file.original_name}</p>
+                                        <p className={styles.fileSize}>
+                                            {file.size > 1024 * 1024
+                                                ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                                                : `${(file.size / 1024).toFixed(1)} KB`}
+                                        </p>
+                                        <div className={styles.fileActions}>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                downloadFile(file.id, file.original_name);
+                                            }} className={styles.downloadButton}>
+                                                Скачать
+                                            </button>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteFile(file.id);
+                                            }} className={styles.deleteButton}>
+                                                Удалить
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Компонент предпросмотра файлов */}
+                {previewFile && (
+                    <div 
+                        className={styles.previewContainer}
+                        style={{
+                            left: previewPosition.x,
+                            top: previewPosition.y
+                        }}
+                    >
+                        <button 
+                            className={styles.previewClose}
+                            onClick={() => setPreviewFile(null)}
+                        >
+                            ×
+                        </button>
+                        
+                        {previewFile.mime_type.startsWith('image/') ? (
+                            <Image 
+                                src={`/api/cloud/files/${previewFile.id}`}
+                                alt={previewFile.original_name}
+                                width={400}
+                                height={400}
+                                className={styles.previewImage}
+                                unoptimized
+                                style={{ objectFit: 'contain' }}
+                            />
+                        ) : previewFile.mime_type.startsWith('video/') ? (
+                            <video 
+                                src={`/api/cloud/files/${previewFile.id}`}
+                                controls
+                                className={styles.previewVideo}
+                            />
+                        ) : (
+                            <div className={styles.previewDocument}>
+                                <div>
+                                    <div>📄</div>
+                                    <div>Предпросмотр недоступен</div>
+                                    <div>для этого типа файла</div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className={styles.previewFileName}>{previewFile.original_name}</div>
+                        <div className={styles.previewFileSize}>
+                            {previewFile.size > 1024 * 1024
+                                ? `${(previewFile.size / (1024 * 1024)).toFixed(1)} MB`
+                                : `${(previewFile.size / 1024).toFixed(1)} KB`}
+                        </div>
+                    </div>
+                )}
+            </main>
         </div>
-      </div>
-    </main>
-  </div>
-);
+    );
 }
