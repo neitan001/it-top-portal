@@ -12,6 +12,7 @@
     "chart.js": "^4.5.0",
     "cookie": "^1.0.2",
     "crypto-js": "^4.1.1",
+    "framer-motion": "^12.19.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
     "mysql2": "^3.9.7",

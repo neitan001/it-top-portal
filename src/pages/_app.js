@@ -2,8 +2,8 @@ import "@/styles/globals.css";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Script from "next/script";
-
 import logger from '@/lib/logger';
+import CloudLayout from '@/components/cloud/CloudLayout';
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -100,13 +100,21 @@ export default function App({ Component, pageProps }) {
     }
   }, [router.pathname]);
 
+  const isCloud = router.pathname.startsWith('/desktop/cloud/');
+
   return (
     <>
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
-      <Component {...pageProps} tg_id={tgId} />
+      {isCloud ? (
+        <CloudLayout>
+          <Component {...pageProps} tg_id={tgId} />
+        </CloudLayout>
+      ) : (
+        <Component {...pageProps} tg_id={tgId} />
+      )}
     </>
   );
 }

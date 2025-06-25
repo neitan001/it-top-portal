@@ -2,8 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import styles from '@/styles/cloud/Personal.module.css';
+import SearchPanel from '@/components/cloud/SearchPanel';
 
 export default function Personal() {
 
@@ -21,6 +21,7 @@ export default function Personal() {
     const originalSwalFire = Swal.fire.bind(Swal);
     const [showBulkActions, setShowBulkActions] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [showSearchPanel, setShowSearchPanel] = useState(false);
 
 useEffect(() => {
   if (selectedFiles.size > 0) {
@@ -125,7 +126,12 @@ Swal.fire = Toast.fire;
             document.body.removeChild(a);
         } catch (error) {
             console.error('Ошибка при скачивании:', error);
-            alert('Не удалось скачать файл: ' + error.message);
+            Swal.fire({
+                title: 'Ошибка при скачивании',
+                text: 'Не удалось скачать файл: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'ОК'
+            });
         } finally {
         }
     };
@@ -299,8 +305,6 @@ const handleFilesUpload = useCallback(async (formData) => {
 
         fetchFiles();
     }, [isAuthenticated]);
-
-    ChartJS.register(ArcElement, Tooltip, Legend);
 
     if (isAuthenticated === null) {
         return null;
@@ -536,7 +540,7 @@ const handleBulkDelete = async () => {
         </li>
 
         <li className={styles.navItem}>
-          <a href="#">
+          <a href="#" onClick={e => { e.preventDefault(); setShowSearchPanel(true); }}>
             <SearchIcon />
             <span>Поиск</span>
           </a>
@@ -583,6 +587,9 @@ const handleBulkDelete = async () => {
     </nav>
 
     <main className={styles.dashboardContent}>
+      {showSearchPanel && (
+        <SearchPanel onClose={() => setShowSearchPanel(false)} large files={files} />
+      )}
       <div className={styles.topSection}>
         <div className={styles.searchContainer}>
           <div className={styles.searchBox}>
@@ -592,6 +599,9 @@ const handleBulkDelete = async () => {
               placeholder="Поиск файлов, документов..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.glowInput}
+              onFocus={() => setShowSearchPanel(true)}
+              onClick={() => setShowSearchPanel(true)}
             />
           </div>
         </div>
