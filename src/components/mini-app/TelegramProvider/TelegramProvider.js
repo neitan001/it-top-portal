@@ -5,8 +5,20 @@ export default function TelegramProvider({ children }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (isReady && window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.expand === 'function') {
+    if (
+      isReady &&
+      window.Telegram &&
+      window.Telegram.WebApp &&
+      typeof window.Telegram.WebApp.expand === 'function'
+    ) {
       window.Telegram.WebApp.expand();
+
+      if (typeof window.Telegram.WebApp.disableClosingConfirmation === 'function') {
+        window.Telegram.WebApp.disableClosingConfirmation();
+      }
+      if (typeof window.Telegram.WebApp.setSwipeBackAllowed === 'function') {
+        window.Telegram.WebApp.setSwipeBackAllowed(false);
+      }
     }
   }, [isReady]);
 
