@@ -4,6 +4,7 @@
   padding: 20px;
   padding-bottom: 80px;
   margin-bottom: 50px;
+  overflow-y: auto;
 }
 
 .header {
@@ -78,6 +79,7 @@
   gap: 10px;
   padding: 0;
   animation: appleScaleIn 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  margin-bottom: 140px;
 }
 
 .gradeTitle {
@@ -317,7 +319,7 @@
 .examRow.examHead {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 1;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(4px);
 }

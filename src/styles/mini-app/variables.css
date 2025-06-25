@@ -54,6 +54,9 @@
     --border: 0.5px solid var(--divider-color);
     --leaderboard-button-bg: rgba(0, 0, 0, 0.03);
     --star-color: white;
+    --schedule-bg: rgba(255, 255, 255, 0.8);
+    --nav-bg: rgba(255, 255, 255, 0.8);
+    --feedback-item-bg: rgba(255, 255, 255, 0.8);
   }
   
   [data-theme="dark"] {
@@ -79,4 +82,7 @@
     --border: 0.5px solid var(--divider-color);
     --leaderboard-button-bg: rgba(255, 255, 255, 0.05);
     --star-color: var(--text-secondary);
+    --schedule-bg: rgba(44, 44, 46, 0.6);
+    --nav-bg: rgba(44, 44, 46, 0.6);
+    --feedback-item-bg: rgba(44, 44, 46, 0.6);
   }
