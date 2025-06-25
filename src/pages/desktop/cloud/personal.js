@@ -485,8 +485,16 @@ const handleFilesUpload = useCallback(async (formData) => {
                     setSelectedFiles(new Set(filesToSelect));
                 }
             } else {
-                // Обычный клик - выделяем только этот файл
-                setSelectedFiles(new Set([fileId]));
+                // Обычный клик - если файл уже выделен, снимаем выделение, иначе выделяем только этот файл
+                if (selectedFiles.has(fileId)) {
+                    setSelectedFiles(prev => {
+                        const newSelection = new Set(prev);
+                        newSelection.delete(fileId);
+                        return newSelection;
+                    });
+                } else {
+                    setSelectedFiles(new Set([fileId]));
+                }
             }
         }
     };
