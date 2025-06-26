@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     const users = await prismaMiniApp.user.findMany({
       where: { group_name: String(group_name) },
-      select: { tg_id: true }
+      select: { tg_id: true },
     });
 
     if (!users || users.length === 0) {
@@ -26,16 +26,16 @@ export default async function handler(req, res) {
 
     for (const user of users) {
       try {
-        const response = await fetch(
-          `${process.env.API_BASE_URL}/api/mini-app/parsers/get_schedule?date=${date || ''}`,
-          {
-            method: 'GET',
-            headers: {
-              'x-telegram-id': user.tg_id,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        const apiUrl = `/api/mini-app/parsers/get_schedule?date=${date || ''}`;
+        console.log('Запрос к:', apiUrl);
+
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'x-telegram-id': user.tg_id,
+            'Content-Type': 'application/json',
+          },
+        });
 
         const data = await response.json();
 
@@ -47,25 +47,26 @@ export default async function handler(req, res) {
         }
       } catch (err) {
         lastError = err.message;
+        console.error('Ошибка запроса:', err);
       }
     }
 
     if (!schedule) {
       return res.status(500).json({
         error: 'Не удалось получить расписание ни для одного пользователя',
-        details: lastError || 'Неизвестная ошибка'
+        details: lastError || 'Неизвестная ошибка',
       });
     }
 
     res.status(200).json({
       success: true,
-      schedule
+      schedule,
     });
   } catch (err) {
     console.error('Ошибка:', err);
     res.status(500).json({
       error: 'Внутренняя ошибка сервера',
-      details: err.message
+      details: err.message,
     });
   }
 }
