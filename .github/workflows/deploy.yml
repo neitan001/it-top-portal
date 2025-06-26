@@ -1,0 +1,34 @@
+name: Build MiniApp
+
+on:
+  push:
+    branches:
+      - dev-neitan
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      - name: Сборка проекта
+        run: npm run build
+
+      - name: Архивация сборки
+        run: zip -r build.zip .next prisma public package.json package-lock.json next.config.mjs jsconfig.json
+
+      - name: Публикация артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: miniapp-build
+          path: build.zip
