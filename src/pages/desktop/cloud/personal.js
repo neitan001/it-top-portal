@@ -5,6 +5,37 @@ import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
 import styles from '@/styles/cloud/Personal.module.css';
 import SearchPanel from '@/components/cloud/SearchPanel';
+import SortMenu from '@/components/cloud/SortMenu';
+
+const SORT_OPTIONS = [
+    { value: 'date_desc', label: 'По дате (сначала новые)' },
+    { value: 'date_asc', label: 'По дате (сначала старые)' },
+    { value: 'name_asc', label: 'По имени (А-Я)' },
+    { value: 'name_desc', label: 'По имени (Я-А)' },
+    { value: 'size_desc', label: 'По размеру (сначала большие)' },
+    { value: 'size_asc', label: 'По размеру (сначала маленькие)' },
+    { value: 'type', label: 'По типу файла' },
+];
+
+function SortIcon({ active, ...props }) {
+    return (
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" {...props}>
+            <path d="M7 10L11 14L15 10" stroke={active ? '#F32B3B' : '#fff'} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="3" y="3" width="16" height="16" rx="4" stroke={active ? '#F32B3B' : '#fff'} strokeWidth="1.3"/>
+        </svg>
+    );
+}
+
+function SortArrowsIcon({ direction = 'desc' }) {
+    return (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{marginRight: 4, minWidth: 20}}>
+            <g>
+                <path d="M7 7L10 4L13 7" stroke={direction === 'asc' ? '#4BC0C0' : '#888'} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7 13L10 16L13 13" stroke={direction === 'desc' ? '#4BC0C0' : '#888'} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </g>
+        </svg>
+    );
+}
 
 export default function Personal() {
 
@@ -23,19 +54,26 @@ export default function Personal() {
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const [isResetAnimatingOut, setIsResetAnimatingOut] = useState(false);
     const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
-    const [previewFile, setPreviewFile] = useState(null);
-    const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
-    const originalSwalFire = Swal.fire.bind(Swal);
     const [showSearchPanel, setShowSearchPanel] = useState(false);
     const [isSelecting, setIsSelecting] = useState(false);
     const [selectionStart, setSelectionStart] = useState(null);
     const [selectionEnd, setSelectionEnd] = useState(null);
+    const [hoverSelection, setHoverSelection] = useState(new Set());
+    const [sortMenuOpen, setSortMenuOpen] = useState(false);
+    const [sortField, setSortField] = useState('date');
+    const [sortDirection, setSortDirection] = useState('desc');
+    const sortMenuAnchorRef = useRef(null);
 
     const handleClickOutside = useCallback((e) => {
-        // Если клик не по файлу и не по предпросмотру, снимаем выделение и закрываем предпросмотр
-        if (!e.target.closest(`.${styles.fileCard}`) && !e.target.closest(`.${styles.previewContainer}`)) {
+        // Если клик не по файлу, не по предпросмотру и не по кнопкам управления, снимаем выделение и закрываем предпросмотр
+        const isFile = e.target.closest(`.${styles.fileCard}`);
+        const isPreview = e.target.closest(`.${styles.previewContainer}`);
+        const isBulkButton = e.target.closest(`.${styles.bulkActions}`);
+        const isResetButton = e.target.closest(`.${styles.resetButtonContainer}`);
+        const isSelectAllButton = e.target.closest(`.${styles.selectAllButton}`);
+        const isFilesGrid = e.target.closest(`.${styles.filesGrid}`);
+        if (!isFile && !isPreview && !isBulkButton && !isResetButton && !isSelectAllButton && !isFilesGrid) {
             setSelectedFiles(new Set());
-            setPreviewFile(null);
         }
     }, []);
 
@@ -48,7 +86,7 @@ export default function Personal() {
             const timer = setTimeout(() => {
                 setShowBulkActions(false);
                 setIsAnimatingOut(false);
-            }, 300); // Должно совпадать с временем transition в CSS
+            }, 350); // Увеличил время для плавности
             return () => clearTimeout(timer);
         }
     }, [selectedFiles, showBulkActions]);
@@ -58,7 +96,7 @@ export default function Personal() {
             setIsResetAnimatingOut(true);
             const timer = setTimeout(() => {
                 setIsResetAnimatingOut(false);
-            }, 300);
+            }, 350); // Увеличил время для плавности
             return () => clearTimeout(timer);
         } else if (selectedFiles.size > 0) {
             setIsResetAnimatingOut(false);
@@ -353,22 +391,36 @@ export default function Personal() {
 
     useEffect(() => {
         const handleGlobalMouseUp = () => {
-            setIsSelecting(false);
-            setSelectionStart(null);
-            setSelectionEnd(null);
+            // Завершаем выделение, но не сбрасываем selectedFiles
+            if (isSelecting) {
+                setIsSelecting(false);
+                setSelectionStart(null);
+                setSelectionEnd(null);
+            }
         };
-
         const handleGlobalClick = (e) => {
             handleClickOutside(e);
         };
-
+        const handleGlobalContextMenu = (e) => {
+            const isFile = e.target.closest(`.${styles.fileCard}`);
+            const isPreview = e.target.closest(`.${styles.previewContainer}`);
+            const isBulkButton = e.target.closest(`.${styles.bulkActions}`);
+            const isResetButton = e.target.closest(`.${styles.resetButtonContainer}`);
+            const isSelectAllButton = e.target.closest(`.${styles.selectAllButton}`);
+            const isFilesGrid = e.target.closest(`.${styles.filesGrid}`);
+            if (!isFile && !isPreview && !isBulkButton && !isResetButton && !isSelectAllButton && !isFilesGrid) {
+                setSelectedFiles(new Set());
+            }
+        };
         document.addEventListener('mouseup', handleGlobalMouseUp);
         document.addEventListener('click', handleGlobalClick);
+        document.addEventListener('contextmenu', handleGlobalContextMenu);
         return () => {
             document.removeEventListener('mouseup', handleGlobalMouseUp);
             document.removeEventListener('click', handleGlobalClick);
+            document.removeEventListener('contextmenu', handleGlobalContextMenu);
         };
-    }, [handleClickOutside]);
+    }, [handleClickOutside, isSelecting]);
 
     if (isAuthenticated === null) {
         return null;
@@ -462,22 +514,15 @@ export default function Personal() {
 
     const selectAllFiles = () => {
         if (selectedFiles.size === files.length) {
-            // Если все файлы уже выделены, снимаем выделение
             setSelectedFiles(new Set());
         } else {
-            // Иначе выделяем все файлы
             setSelectedFiles(new Set(files.map(file => file.id)));
         }
     };
 
     const handleMouseDown = (e, fileId) => {
-        if (e.button === 0) { // Левая кнопка мыши
-            e.preventDefault(); // Предотвращаем выделение текста
-            setIsSelecting(true);
-            setSelectionStart(fileId);
-            setSelectionEnd(fileId);
-            
-            // Если нажат Ctrl/Cmd, добавляем к выделению, иначе заменяем
+        if (e.button === 0) {
+            e.preventDefault();
             if (e.ctrlKey || e.metaKey) {
                 setSelectedFiles(prev => {
                     const newSelection = new Set(prev);
@@ -488,59 +533,39 @@ export default function Personal() {
                     }
                     return newSelection;
                 });
-            } else if (e.shiftKey && selectedFiles.size > 0) {
-                // Если нажат Shift, выделяем диапазон
+                setIsSelecting(false);
+                setSelectionStart(null);
+                setSelectionEnd(null);
+                return;
+            }
+            if (e.shiftKey && selectedFiles.size > 0) {
                 const lastSelected = Array.from(selectedFiles).pop();
                 const startIndex = files.findIndex(f => f.id === lastSelected);
                 const endIndex = files.findIndex(f => f.id === fileId);
-                
                 if (startIndex !== -1 && endIndex !== -1) {
                     const minIndex = Math.min(startIndex, endIndex);
                     const maxIndex = Math.max(startIndex, endIndex);
                     const filesToSelect = files.slice(minIndex, maxIndex + 1).map(f => f.id);
                     setSelectedFiles(new Set(filesToSelect));
                 }
-            } else {
-                // Обычный клик - выделяем только этот файл
-                setSelectedFiles(new Set([fileId]));
+                setIsSelecting(false);
+                setSelectionStart(null);
+                setSelectionEnd(null);
+                return;
             }
+            // Drag-выделение
+            setIsSelecting(true);
+            setSelectionStart(fileId);
+            setSelectionEnd(fileId);
+            setSelectedFiles(new Set([fileId]));
         }
-    };
-
-    const handleDoubleClick = (e, file) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Позиция для предпросмотра
-        const rect = e.currentTarget.getBoundingClientRect();
-        const previewWidth = 400; // Примерная ширина предпросмотра
-        const windowWidth = window.innerWidth;
-        
-        let x = rect.right + 10;
-        let y = rect.top;
-        
-        // Если предпросмотр уйдет за правый край, показываем слева от файла
-        if (x + previewWidth > windowWidth) {
-            x = rect.left - previewWidth - 10;
-        }
-        
-        // Если предпросмотр уйдет за верхний край, корректируем Y
-        if (y < 0) {
-            y = 10;
-        }
-        
-        setPreviewPosition({ x, y });
-        setPreviewFile(file);
     };
 
     const handleMouseEnter = (fileId) => {
-        if (isSelecting) {
+        if (isSelecting && selectionStart !== null) {
             setSelectionEnd(fileId);
-            
-            // Выделяем все файлы между начальной и текущей позицией
             const startIndex = files.findIndex(f => f.id === selectionStart);
             const endIndex = files.findIndex(f => f.id === fileId);
-            
             if (startIndex !== -1 && endIndex !== -1) {
                 const minIndex = Math.min(startIndex, endIndex);
                 const maxIndex = Math.max(startIndex, endIndex);
@@ -551,9 +576,20 @@ export default function Personal() {
     };
 
     const handleMouseUp = () => {
-        setIsSelecting(false);
-        setSelectionStart(null);
-        setSelectionEnd(null);
+        if (isSelecting && selectionStart !== null && selectionEnd !== null) {
+            const startIndex = files.findIndex(f => f.id === selectionStart);
+            const endIndex = files.findIndex(f => f.id === selectionEnd);
+            if (startIndex !== -1 && endIndex !== -1) {
+                const minIndex = Math.min(startIndex, endIndex);
+                const maxIndex = Math.max(startIndex, endIndex);
+                const filesToSelect = files.slice(minIndex, maxIndex + 1).map(f => f.id);
+                setSelectedFiles(new Set(filesToSelect));
+            }
+            setIsSelecting(false);
+            setSelectionStart(null);
+            setSelectionEnd(null);
+            setHoverSelection(new Set());
+        }
     };
 
     const selectedCount = Object.keys(selectedFiles).length;
@@ -690,6 +726,38 @@ export default function Personal() {
         </div>
     );
 
+    // Сортировка файлов
+    const sortedFiles = [...files].sort((a, b) => {
+        let res = 0;
+        switch (sortField) {
+            case 'date':
+                res = new Date(b.uploaded_at || b.created_at) - new Date(a.uploaded_at || a.created_at);
+                break;
+            case 'name':
+                res = a.original_name.localeCompare(b.original_name, 'ru');
+                break;
+            case 'size':
+                res = b.size - a.size;
+                break;
+            case 'type':
+                res = a.mime_type.localeCompare(b.mime_type);
+                break;
+            default:
+                res = 0;
+        }
+        return sortDirection === 'desc' ? res : -res;
+    });
+
+    const handleSortSelect = (field) => {
+        if (field === sortField) {
+            setSortDirection((d) => (d === 'desc' ? 'asc' : 'desc'));
+        } else {
+            setSortField(field);
+            setSortDirection('desc');
+        }
+        setSortMenuOpen(false);
+    };
+
     return (
         <div className={styles.dashboardLayout}>
             <nav className={styles.dashboardNav}>
@@ -810,37 +878,56 @@ export default function Personal() {
                         <small>или нажмите &apos;Загрузить&apos; выше</small>
                     </div>
 
-                    <div 
-                        className={`${styles.bulkActions} ${showBulkActions ? styles.show : ''} ${isAnimatingOut ? styles.animateOut : ''}`}
-                    >
-                        <button 
-                            onClick={handleBulkDownload}
-                            className={styles.bulkButton}
-                        >
-                            Скачать выбранные ({selectedFiles.size})
-                        </button>
-                        <button 
-                            onClick={handleBulkDelete}
-                            className={styles.bulkButton}
-                        >
-                            Удалить выбранные ({selectedFiles.size})
-                        </button>
-                    </div>
-
                     <div className={styles.filesContainer}>
                         <div className={styles.filesHeader}>
-                            <h2 className={styles.sectionTitle}>Ваши файлы</h2>
-                            <div className={styles.headerButtons}>
-                                {selectedFiles.size > 0 && (
-                                    <div className={`${styles.resetButtonContainer} ${isResetAnimatingOut ? styles.animateOut : ''}`}>
-                                        <button 
-                                            onClick={() => setSelectedFiles(new Set())}
-                                            className={styles.resetButton}
+                            <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                                Ваши файлы
+                                <span ref={sortMenuAnchorRef} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginLeft: 4 }} onClick={() => setSortMenuOpen((v) => !v)}>
+                                    <SortArrowsIcon direction={sortDirection} />
+                                    <span style={{marginLeft: 2, marginRight: 2, fontWeight: 500}}>Сортировать</span>
+                                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{marginLeft: 2}}><path d="M6 8L10 12L14 8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                </span>
+                                <SortMenu
+                                    open={sortMenuOpen}
+                                    anchorRef={sortMenuAnchorRef}
+                                    sortField={sortField}
+                                    sortDirection={sortDirection}
+                                    onSelect={handleSortSelect}
+                                    onDirectionChange={setSortDirection}
+                                    onClose={() => setSortMenuOpen(false)}
+                                />
+                            </h2>
+                            <div className={styles.headerButtonsColumn}>
+                                {selectedFiles.size > 0 || isAnimatingOut ? (
+                                    <>
+                                        <button
+                                            onClick={handleBulkDownload}
+                                            className={
+                                                styles.selectAllButton + ' ' +
+                                                (selectedFiles.size > 0 && !isAnimatingOut
+                                                    ? styles.bulkButtonFade
+                                                    : isAnimatingOut
+                                                    ? styles.bulkButtonFadeOut
+                                                    : '')
+                                            }
                                         >
-                                            Сбросить выбор
+                                            Скачать выделенное
                                         </button>
-                                    </div>
-                                )}
+                                        <button
+                                            onClick={handleBulkDelete}
+                                            className={
+                                                styles.selectAllButton + ' ' +
+                                                (selectedFiles.size > 0 && !isAnimatingOut
+                                                    ? styles.bulkButtonFade + ' ' + styles.bulkButtonFadeDelay
+                                                    : isAnimatingOut
+                                                    ? styles.bulkButtonFadeOut + ' ' + styles.bulkButtonFadeDelay
+                                                    : '')
+                                            }
+                                        >
+                                            Удалить выделенное
+                                        </button>
+                                    </>
+                                ) : null}
                                 <button 
                                     onClick={selectAllFiles}
                                     className={styles.selectAllButton}
@@ -853,15 +940,46 @@ export default function Personal() {
                             <div className={styles.emptyState}>Файлы отсутствуют</div>
                         ) : (
                             <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()}>
-                                {files.map((file) => (
-                                    <div 
+                                {sortedFiles.map((file) => (
+                                    <div
                                         key={file.id}
-                                        className={`${styles.fileCard} ${selectedFiles.has(file.id) ? styles.selected : ''}`}
+                                        className={`${styles.fileCard} ${(selectedFiles.has(file.id) || hoverSelection.has(file.id)) ? styles.selected : ''}`}
                                         onMouseDown={(e) => handleMouseDown(e, file.id)}
                                         onMouseEnter={() => handleMouseEnter(file.id)}
-                                        onDoubleClick={(e) => handleDoubleClick(e, file)}
-                                        onContextMenu={(e) => e.preventDefault()}
+                                        onContextMenu={(e) => {
+                                            if (selectedFiles.has(file.id)) {
+                                                e.preventDefault();
+                                                setSelectedFiles(new Set());
+                                            }
+                                        }}
                                     >
+                                        {/* Предпросмотр внутри карточки */}
+                                        {file.mime_type.startsWith('image/') ? (
+                                            <Image 
+                                                src={`/api/cloud/files/${file.id}`}
+                                                alt={file.original_name}
+                                                width={120}
+                                                height={120}
+                                                className={styles.filePreviewImage}
+                                                unoptimized
+                                                style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
+                                            />
+                                        ) : file.mime_type.startsWith('video/') ? (
+                                            <video 
+                                                src={`/api/cloud/files/${file.id}`}
+                                                className={styles.filePreviewVideo}
+                                                width={120}
+                                                height={120}
+                                                style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
+                                                controls={false}
+                                                muted
+                                                preload="metadata"
+                                            />
+                                        ) : (
+                                            <div className={styles.filePreviewDocument} style={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, marginBottom: 8, fontSize: 36 }}>
+                                                📄
+                                            </div>
+                                        )}
                                         <p className={styles.fileName}>{file.original_name}</p>
                                         <p className={styles.fileSize}>
                                             {file.size > 1024 * 1024
@@ -888,57 +1006,6 @@ export default function Personal() {
                         )}
                     </div>
                 </div>
-
-                {/* Компонент предпросмотра файлов */}
-                {previewFile && (
-                    <div 
-                        className={styles.previewContainer}
-                        style={{
-                            left: previewPosition.x,
-                            top: previewPosition.y
-                        }}
-                    >
-                        <button 
-                            className={styles.previewClose}
-                            onClick={() => setPreviewFile(null)}
-                        >
-                            ×
-                        </button>
-                        
-                        {previewFile.mime_type.startsWith('image/') ? (
-                            <Image 
-                                src={`/api/cloud/files/${previewFile.id}`}
-                                alt={previewFile.original_name}
-                                width={400}
-                                height={400}
-                                className={styles.previewImage}
-                                unoptimized
-                                style={{ objectFit: 'contain' }}
-                            />
-                        ) : previewFile.mime_type.startsWith('video/') ? (
-                            <video 
-                                src={`/api/cloud/files/${previewFile.id}`}
-                                controls
-                                className={styles.previewVideo}
-                            />
-                        ) : (
-                            <div className={styles.previewDocument}>
-                                <div>
-                                    <div>📄</div>
-                                    <div>Предпросмотр недоступен</div>
-                                    <div>для этого типа файла</div>
-                                </div>
-                            </div>
-                        )}
-                        
-                        <div className={styles.previewFileName}>{previewFile.original_name}</div>
-                        <div className={styles.previewFileSize}>
-                            {previewFile.size > 1024 * 1024
-                                ? `${(previewFile.size / (1024 * 1024)).toFixed(1)} MB`
-                                : `${(previewFile.size / 1024).toFixed(1)} KB`}
-                        </div>
-                    </div>
-                )}
             </main>
         </div>
     );
