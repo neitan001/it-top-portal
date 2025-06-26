@@ -6,6 +6,9 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/cloud/Personal.module.css';
 import SearchPanel from '@/components/cloud/SearchPanel';
 import SortMenu from '@/components/cloud/SortMenu';
+import { swalWithTheme } from '@/components/cloud/SwalWithTheme';
+import { Toast } from '@/components/cloud/SwalToast';
+import PreviewModal from '@/components/cloud/PreviewModal';
 
 const SORT_OPTIONS = [
     { value: 'date_desc', label: 'По дате (сначала новые)' },
@@ -63,6 +66,9 @@ export default function Personal() {
     const [sortField, setSortField] = useState('date');
     const [sortDirection, setSortDirection] = useState('desc');
     const sortMenuAnchorRef = useRef(null);
+    const [firstShowAnimated, setFirstShowAnimated] = useState(false);
+    const [showFiles, setShowFiles] = useState(false);
+    const [previewFile, setPreviewFile] = useState(null);
 
     const handleClickOutside = useCallback((e) => {
         // Если клик не по файлу, не по предпросмотру и не по кнопкам управления, снимаем выделение и закрываем предпросмотр
@@ -102,46 +108,6 @@ export default function Personal() {
             setIsResetAnimatingOut(false);
         }
     }, [selectedFiles, isResetAnimatingOut]);
-
-    Swal.fire = function(config) {
-        const darkTheme = {
-            background: '#1a1a1a',
-            color: 'white',
-            confirmButtonColor: '#F32B3B',
-            cancelButtonColor: '#333',
-            iconColor: '#F32B3B',
-            customClass: {
-                popup: 'swal-dark',
-                confirmButton: 'swal-dark-confirm',
-                cancelButton: 'swal-dark-cancel'
-            }
-        };
-        
-        return originalSwalFire({
-            ...darkTheme,
-            ...config
-        });
-    };
-
-    // Toast-уведомления
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        width: '380px',
-        padding: '0.8rem',
-        background: '#1a1a1a',
-        color: 'white',
-        iconColor: '#F32B3B',
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        didOpen: (toast) => {
-            toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
-            toast.style.borderRadius = '8px';
-        }
-    });
-
-    Swal.fire = Toast.fire;
 
     useEffect(() => {
         async function checkAuth() {
@@ -192,7 +158,7 @@ export default function Personal() {
             document.body.removeChild(a);
         } catch (error) {
             console.error('Ошибка при скачивании:', error);
-            Swal.fire({
+            swalWithTheme({
                 title: 'Ошибка при скачивании',
                 text: 'Не удалось скачать файл: ' + error.message,
                 icon: 'error',
@@ -203,19 +169,13 @@ export default function Personal() {
     };
 
     const deleteFile = async (fileId) => {
-        const result = await Swal.fire({
+        const result = await swalWithTheme({
             title: 'Удалить файл?',
             text: 'Вы уверены, что хотите удалить этот файл?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Удалить',
             cancelButtonText: 'Отмена',
-            customClass: {
-                popup: 'swal-dark',
-                confirmButton: 'swal-dark-confirm',
-                cancelButton: 'swal-dark-cancel',
-                timer: undefined
-            }
         });
 
         if (!result.isConfirmed) return;
@@ -422,6 +382,16 @@ export default function Personal() {
         };
     }, [handleClickOutside, isSelecting]);
 
+    useEffect(() => {
+        if (!isLoading && files.length > 0 && !firstShowAnimated) {
+            setFirstShowAnimated(true);
+            setShowFiles(false);
+            requestAnimationFrame(() => {
+                setShowFiles(true);
+            });
+        }
+    }, [isLoading, files, firstShowAnimated]);
+
     if (isAuthenticated === null) {
         return null;
     }
@@ -622,18 +592,13 @@ export default function Personal() {
     const handleBulkDelete = async () => {
         if (selectedFiles.size === 0) return;
 
-        const result = await Swal.fire({
+        const result = await swalWithTheme({
             title: 'Удалить выбранные файлы?',
             text: `Вы уверены, что хотите удалить ${selectedFiles.size} файлов?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Удалить',
             cancelButtonText: 'Отмена',
-            customClass: {
-                popup: 'swal-dark',
-                confirmButton: 'swal-dark-confirm',
-                cancelButton: 'swal-dark-cancel'
-            }
         });
 
         if (!result.isConfirmed) return;
@@ -865,147 +830,159 @@ export default function Personal() {
                     </div>
                 </div>
 
-                <div className={styles.mt8}>
-                    <div 
-                        className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
-                        onDragEnter={handleDragEnter}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                    >
-                        <UploadIcon />
-                        <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
-                        <small>или нажмите &apos;Загрузить&apos; выше</small>
-                    </div>
-
-                    <div className={styles.filesContainer}>
-                        <div className={styles.filesHeader}>
-                            <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
-                                Ваши файлы
-                                <span ref={sortMenuAnchorRef} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginLeft: 4 }} onClick={() => setSortMenuOpen((v) => !v)}>
-                                    <SortArrowsIcon direction={sortDirection} />
-                                    <span style={{marginLeft: 2, marginRight: 2, fontWeight: 500}}>Сортировать</span>
-                                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{marginLeft: 2}}><path d="M6 8L10 12L14 8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                </span>
-                                <SortMenu
-                                    open={sortMenuOpen}
-                                    anchorRef={sortMenuAnchorRef}
-                                    sortField={sortField}
-                                    sortDirection={sortDirection}
-                                    onSelect={handleSortSelect}
-                                    onDirectionChange={setSortDirection}
-                                    onClose={() => setSortMenuOpen(false)}
-                                />
-                            </h2>
-                            <div className={styles.headerButtonsColumn}>
-                                {selectedFiles.size > 0 || isAnimatingOut ? (
-                                    <>
-                                        <button
-                                            onClick={handleBulkDownload}
-                                            className={
-                                                styles.selectAllButton + ' ' +
-                                                (selectedFiles.size > 0 && !isAnimatingOut
-                                                    ? styles.bulkButtonFade
-                                                    : isAnimatingOut
-                                                    ? styles.bulkButtonFadeOut
-                                                    : '')
-                                            }
-                                        >
-                                            Скачать выделенное
-                                        </button>
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={
-                                                styles.selectAllButton + ' ' +
-                                                (selectedFiles.size > 0 && !isAnimatingOut
-                                                    ? styles.bulkButtonFade + ' ' + styles.bulkButtonFadeDelay
-                                                    : isAnimatingOut
-                                                    ? styles.bulkButtonFadeOut + ' ' + styles.bulkButtonFadeDelay
-                                                    : '')
-                                            }
-                                        >
-                                            Удалить выделенное
-                                        </button>
-                                    </>
-                                ) : null}
-                                <button 
-                                    onClick={selectAllFiles}
-                                    className={styles.selectAllButton}
-                                >
-                                    Выделить всё
-                                </button>
-                            </div>
-                        </div>
-                        {files.length === 0 && !isLoading ? (
-                            <div className={styles.emptyState}>Файлы отсутствуют</div>
-                        ) : (
-                            <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()}>
-                                {sortedFiles.map((file) => (
-                                    <div
-                                        key={file.id}
-                                        className={`${styles.fileCard} ${(selectedFiles.has(file.id) || hoverSelection.has(file.id)) ? styles.selected : ''}`}
-                                        onMouseDown={(e) => handleMouseDown(e, file.id)}
-                                        onMouseEnter={() => handleMouseEnter(file.id)}
-                                        onContextMenu={(e) => {
-                                            if (selectedFiles.has(file.id)) {
-                                                e.preventDefault();
-                                                setSelectedFiles(new Set());
-                                            }
-                                        }}
-                                    >
-                                        {/* Предпросмотр внутри карточки */}
-                                        {file.mime_type.startsWith('image/') ? (
-                                            <Image 
-                                                src={`/api/cloud/files/${file.id}`}
-                                                alt={file.original_name}
-                                                width={120}
-                                                height={120}
-                                                className={styles.filePreviewImage}
-                                                unoptimized
-                                                style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
-                                            />
-                                        ) : file.mime_type.startsWith('video/') ? (
-                                            <video 
-                                                src={`/api/cloud/files/${file.id}`}
-                                                className={styles.filePreviewVideo}
-                                                width={120}
-                                                height={120}
-                                                style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
-                                                controls={false}
-                                                muted
-                                                preload="metadata"
-                                            />
-                                        ) : (
-                                            <div className={styles.filePreviewDocument} style={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, marginBottom: 8, fontSize: 36 }}>
-                                                📄
-                                            </div>
-                                        )}
-                                        <p className={styles.fileName}>{file.original_name}</p>
-                                        <p className={styles.fileSize}>
-                                            {file.size > 1024 * 1024
-                                                ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-                                                : `${(file.size / 1024).toFixed(1)} KB`}
-                                        </p>
-                                        <div className={styles.fileActions}>
-                                            <button onClick={(e) => {
-                                                e.stopPropagation();
-                                                downloadFile(file.id, file.original_name);
-                                            }} className={styles.downloadButton}>
-                                                Скачать
-                                            </button>
-                                            <button onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteFile(file.id);
-                                            }} className={styles.deleteButton}>
-                                                Удалить
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                <div 
+                    className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={handleUploadClick}
+                    role="button"
+                    tabIndex={0}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <UploadIcon />
+                    <p>{isDragging ? 'Отпустите файлы здесь' : 'Перетащите файлы сюда'}</p>
+                    <small>или нажмите &apos;Загрузить&apos; выше</small>
                 </div>
+
+                <div className={styles.filesContainer}>
+                    <div className={styles.filesHeader}>
+                        <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+                            Ваши файлы
+                            <span ref={sortMenuAnchorRef} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginLeft: 4 }} onClick={() => setSortMenuOpen((v) => !v)}>
+                                <SortArrowsIcon direction={sortDirection} />
+                                <span style={{marginLeft: 2, marginRight: 2, fontWeight: 500}}>Сортировать</span>
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{marginLeft: 2}}><path d="M6 8L10 12L14 8" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </span>
+                            <SortMenu
+                                open={sortMenuOpen}
+                                anchorRef={sortMenuAnchorRef}
+                                sortField={sortField}
+                                sortDirection={sortDirection}
+                                onSelect={handleSortSelect}
+                                onDirectionChange={setSortDirection}
+                                onClose={() => setSortMenuOpen(false)}
+                            />
+                        </h2>
+                        <div className={styles.headerButtonsColumn}>
+                            {selectedFiles.size > 0 || isAnimatingOut ? (
+                                <>
+                                    <button
+                                        onClick={handleBulkDownload}
+                                        className={
+                                            styles.selectAllButton + ' ' +
+                                            (selectedFiles.size > 0 && !isAnimatingOut
+                                                ? styles.bulkButtonFade
+                                                : isAnimatingOut
+                                                ? styles.bulkButtonFadeOut
+                                                : '')
+                                        }
+                                    >
+                                        Скачать выделенное
+                                    </button>
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        className={
+                                            styles.selectAllButton + ' ' +
+                                            (selectedFiles.size > 0 && !isAnimatingOut
+                                                ? styles.bulkButtonFade + ' ' + styles.bulkButtonFadeDelay
+                                                : isAnimatingOut
+                                                ? styles.bulkButtonFadeOut + ' ' + styles.bulkButtonFadeDelay
+                                                : '')
+                                        }
+                                    >
+                                        Удалить выделенное
+                                    </button>
+                                </>
+                            ) : null}
+                            <button 
+                                onClick={selectAllFiles}
+                                className={styles.selectAllButton}
+                            >
+                                Выделить всё
+                            </button>
+                        </div>
+                    </div>
+                    {isLoading ? (
+                        <div className={styles.loaderWrapper}>
+                            <div className={styles.loader}></div>
+                        </div>
+                    ) : files.length === 0 ? (
+                        <div className={styles.emptyState}>Файлы отсутствуют</div>
+                    ) : (
+                        <div className={styles.filesGrid} onMouseUp={handleMouseUp} onContextMenu={(e) => e.preventDefault()} style={{visibility: showFiles ? 'visible' : 'hidden'}}>
+                            {sortedFiles.map((file) => (
+                                <div
+                                    key={file.id}
+                                    className={
+                                        styles.fileCard +
+                                        ((firstShowAnimated && showFiles) ? ' ' + styles.fileCardAnimated : '') +
+                                        ((selectedFiles.has(file.id) || hoverSelection.has(file.id)) ? ' ' + styles.selected : '')
+                                    }
+                                    onMouseDown={(e) => handleMouseDown(e, file.id)}
+                                    onMouseEnter={() => handleMouseEnter(file.id)}
+                                    onDoubleClick={() => setPreviewFile(file)}
+                                    onContextMenu={(e) => {
+                                        if (selectedFiles.has(file.id)) {
+                                            e.preventDefault();
+                                            setSelectedFiles(new Set());
+                                        }
+                                    }}
+                                >
+                                    {/* Предпросмотр внутри карточки */}
+                                    {file.mime_type.startsWith('image/') ? (
+                                        <Image 
+                                            src={`/api/cloud/files/${file.id}`}
+                                            alt={file.original_name}
+                                            width={120}
+                                            height={120}
+                                            className={styles.filePreviewImage}
+                                            unoptimized
+                                            style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
+                                        />
+                                    ) : file.mime_type.startsWith('video/') ? (
+                                        <video 
+                                            src={`/api/cloud/files/${file.id}`}
+                                            className={styles.filePreviewVideo}
+                                            width={120}
+                                            height={120}
+                                            style={{ objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
+                                            controls={false}
+                                            muted
+                                            preload="metadata"
+                                        />
+                                    ) : (
+                                        <div className={styles.filePreviewDocument} style={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, marginBottom: 8, fontSize: 36 }}>
+                                            📄
+                                        </div>
+                                    )}
+                                    <p className={styles.fileName}>{file.original_name}</p>
+                                    <p className={styles.fileSize}>
+                                        {file.size > 1024 * 1024
+                                            ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                                            : `${(file.size / 1024).toFixed(1)} KB`}
+                                    </p>
+                                    <div className={styles.fileActions}>
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
+                                            downloadFile(file.id, file.original_name);
+                                        }} className={styles.downloadButton}>
+                                            Скачать
+                                        </button>
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteFile(file.id);
+                                        }} className={styles.deleteButton}>
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
             </main>
         </div>
     );

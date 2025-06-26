@@ -18,15 +18,7 @@ const MENU_STRUCTURE = [
     { divider: true },
     { value: 'asc', label: 'По возрастанию', isDirection: true },
     { value: 'desc', label: 'По убыванию', isDirection: true },
-    { divider: true },
-    {
-        label: 'Группировать',
-        submenu: [
-            // Можно добавить реальные опции группировки, если нужны
-            { value: 'groupType', label: 'По типу' },
-            { value: 'groupDate', label: 'По дате' },
-        ]
-    },
+    { divider: true }
 ];
 
 export default function SortMenu({ open, anchorRef, sortField, sortDirection, onSelect, onDirectionChange, onClose }) {

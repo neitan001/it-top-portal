@@ -5,26 +5,9 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import styles from '@/styles/cloud/Dashboard.module.css';
 import SearchPanel from '@/components/cloud/SearchPanel';
-import Swal from 'sweetalert2';
+import { swalWithTheme } from '@/components/cloud/SwalWithTheme';
 import Head from 'next/head';
-
-// Toast-уведомления
-const Toast = Swal.mixin({
-  toast: true,
-  position: 'top-end',
-  width: '380px',
-  padding: '0.8rem',
-  background: '#1a1a1a',
-  color: 'white',
-  iconColor: '#F32B3B',
-  timer: 3000,
-  timerProgressBar: true,
-  showConfirmButton: false,
-  didOpen: (toast) => {
-    toast.style.border = '1px solid rgba(243, 43, 59, 0.3)';
-    toast.style.borderRadius = '8px';
-  }
-});
+import { Toast } from '@/components/cloud/SwalToast';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -212,7 +195,7 @@ export default function Dashboard() {
         }
       } else {
         const errorData = await res.json();
-        Swal.fire({
+        swalWithTheme({
           title: 'Ошибка при загрузке файла',
           text: errorData.error || 'Произошла ошибка при загрузке файла',
           icon: 'error',
@@ -220,7 +203,7 @@ export default function Dashboard() {
         });
       }
     } catch (error) {
-      Swal.fire({
+      swalWithTheme({
         title: 'Ошибка сети',
         text: 'Произошла ошибка при попытке загрузки файла',
         icon: 'error',
