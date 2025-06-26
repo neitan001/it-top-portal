@@ -17,6 +17,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      
+      - name: Генерация клиента Prisma
+        run: npx prisma generate --schema=prisma/mini-app/schema.prisma
 
       - name: Установка зависимостей
         run: npm ci
