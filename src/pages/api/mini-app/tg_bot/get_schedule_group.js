@@ -11,6 +11,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Не указан group_name' });
   }
 
+  if (!process.env.BASE_DOMAIN) {
+    console.error('Ошибка: BASE_DOMAIN не определён в .env');
+    return res.status(500).json({
+      error: 'Внутренняя ошибка сервера',
+      details: 'Не настроен базовый домен API',
+    });
+  }
+
   try {
     const users = await prismaMiniApp.user.findMany({
       where: { group_name: String(group_name) },
@@ -26,7 +34,7 @@ export default async function handler(req, res) {
 
     for (const user of users) {
       try {
-        const apiUrl = `/api/mini-app/parsers/get_schedule?date=${date || ''}`;
+        const apiUrl = `${process.env.BASE_DOMAIN}/api/mini-app/parsers/get_schedule?date=${date || ''}`;
         console.log('Запрос к:', apiUrl);
 
         const response = await fetch(apiUrl, {
