@@ -69,14 +69,15 @@ export default async function handler(req, res) {
 
     if (result.shouldRetry) {
       const newToken = await refreshToken(tg_id);
-      if (!newToken) {
+      if (newToken) {
+        headers.Authorization = `Bearer ${newToken}`;
+        result = await fetchSchedule(scheduleUrl, headers);
+      } else {
         return res.status(401).json({
           error: "Не удалось обновить токен",
           details: "Попробуйте войти заново"
         });
       }
-      headers.Authorization = `Bearer ${newToken}`;
-      result = await fetchSchedule(scheduleUrl, headers);
     }
 
     if (result.error) {
