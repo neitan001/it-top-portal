@@ -11,13 +11,14 @@
   "dependencies": {
     "@prisma/client": "^6.10.1",
     "crypto-js": "^4.1.1",
+    "framer-motion": "^10.18.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
     "next": "^15.3.4",
     "prisma": "^6.10.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sweetalert2": "^11.22.0",
+    "react-toastify": "^11.0.5",
     "winston": "^3.13.0"
   },
   "devDependencies": {

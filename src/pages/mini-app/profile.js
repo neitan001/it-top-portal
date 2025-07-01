@@ -1,37 +1,31 @@
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
-import Swal from 'sweetalert2';
+import { coreAlert } from '@/components/CoreAlert';
 
-const Profile = dynamic(() => import ('@/components/mini-app/Profile/Profile'), {
-  loading: () => {
-    Swal.fire({
-      title: 'Загрузка профиля',
-      html: 'Пожалуйста, подождите...',
-      allowOutsideClick: false,
-      customClass: {
-        popup: 'mini-app-swal-popup-loading',
-        title: 'mini-app-swal-title-loading',
-        confirmButton: 'mini-app-swal-confirm-button'
-      },
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    return null;
-  }
-});
+const Profile = dynamic(() => import('@/components/mini-app/Profile/Profile'));
 
-const Navigation = dynamic(() => import ('@/components/mini-app/Navigation/Navigation'));
+const Navigation = dynamic(() => import('@/components/mini-app/Navigation/Navigation'));
 
 export default function ProfilePage() {
   const { tgId, isLoading } = useTelegramAuth();
 
+  useEffect(() => {
+    coreAlert({
+      type: "info",
+      title: "Загрузка профиля...",
+      loader: true,
+      successButton: { show: false },
+      cancelButton: { show: false },
+    });
+  }, []);
+
   if (isLoading) {
-    return;
+    return null;
   }
 
   const handleProfileReady = () => {
-    Swal.close();
+    coreAlert.close();
   };
 
   return (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image'
 import { versions } from '@/lib/versions';
 import styles from './Profile.module.css';
-import Swal from 'sweetalert2';
+import { coreAlert } from '@/components/CoreAlert';
 
 export default function Profile({ tgId, onProfileReady }) {
   const [profile, setProfile] = useState(null);
@@ -281,25 +281,12 @@ export default function Profile({ tgId, onProfileReady }) {
     logoutBtn.className = styles.logoutButton;
     logoutBtn.textContent = 'Выйти из аккаунта';
     logoutBtn.addEventListener('click', async () => {
-      document.body.removeChild(modal);
-      const result = await Swal.fire({
-        title: 'Подтверждение выхода',
-        text: 'Вы точно хотите выйти из аккаунта?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Да, выйти',
-        cancelButtonText: 'Отмена',
-        reverseButtons: true,
-        customClass: {
-          popup: 'mini-app-swal-popup-logout',
-          title: 'mini-app-swal-title-logout',
-          confirmButton: 'mini-app-swal-confirm-button-logout'
-        }
+      coreAlert({
+        type: "warning",
+        title: "Вы точно хотите выйти из аккаунта?",
+        successButton: { show: true, displayText: "Да, выйти", onClick: () => handleLogout(tgId) },
+        cancelButton: { show: true, displayText: "Отмена", onClick: () => document.body.removeChild(modal) },
       });
-      
-      if (result.isConfirmed) {
-        handleLogout(tgId);
-      }
     });
 
     const closeBtn = document.createElement('button');

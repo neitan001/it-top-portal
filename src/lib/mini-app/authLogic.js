@@ -42,7 +42,7 @@ export function useAuthLogic(tg_id) {
         localStorage.setItem('theme', data.theme);
       }
 
-      router.push("/mini-app/dashboard");
+      window.location.replace("/mini-app/dashboard");
     } catch (err) {
       console.error(err);
       setMessage("Ошибка сети. Попробуйте позже.");

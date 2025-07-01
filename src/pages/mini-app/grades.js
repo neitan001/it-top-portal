@@ -1,37 +1,30 @@
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
-import Swal from 'sweetalert2';
+import { coreAlert } from '@/components/CoreAlert';
 
 const Navigation = dynamic(() => import('@/components/mini-app/Navigation/Navigation'));
-const Grades = dynamic(() => import('@/components/mini-app/Grades/Grades'), {
-  loading: () => {
-    Swal.fire({
-      title: 'Загрузка оценок',
-      html: 'Пожалуйста, подождите...',
-      allowOutsideClick: false,
-      customClass: {
-        popup: 'mini-app-swal-popup-loading',
-        title: 'mini-app-swal-title-loading',
-        confirmButton: 'mini-app-swal-confirm-button'
-      },
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    return null;
-  }
-});
-
+const Grades = dynamic(() => import('@/components/mini-app/Grades/Grades'));
 
 export default function GradesPage() {
   const { tgId, isLoading } = useTelegramAuth();
 
+  useEffect(() => {
+    coreAlert({
+      type: "info",
+      title: "Загрузка оценок...",
+      loader: true,
+      successButton: { show: false },
+      cancelButton: { show: false },
+    });
+  }, []);
+
   if (isLoading) {
-    return;
+    return null;
   }
 
   const handleGradesReady = () => {
-    Swal.close();
+    coreAlert.close();
   };
 
   return (

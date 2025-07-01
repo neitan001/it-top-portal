@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import styles from './Calendar.module.css';
-import Swal from 'sweetalert2';
+import { coreAlert } from '@/components/CoreAlert';
 
 const Calendar = ({ tgId }) => {
     const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -20,16 +20,17 @@ const Calendar = ({ tgId }) => {
 
     useEffect(() => {
         if (!loading && hasFetched && !error && schedule.length === 0) {
-            Swal.fire({
-                icon: "error",
-                title: "Расписание не найдено",
-                text: "На выбранный день данных нет.",
-                confirmButtonText: 'Ок',
-                customClass: {
-                    popup: 'mini-app-swal-popup',
-                    title: 'mini-app-swal-title',
-                    confirmButton: 'mini-app-swal-confirm-button'
-                }
+            coreAlert({
+                type: "warning",
+                title: "Нет расписания",
+                subtitle: "На выбранный день данных нет.",
+                timer: 650,
+                successButton: {
+                    show: false,
+                },
+                cancelButton: {
+                    show: false,
+                },
             });
         }
     }, [loading, hasFetched, error, schedule]);
