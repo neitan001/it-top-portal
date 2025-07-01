@@ -1,7 +1,5 @@
 import "@/styles/globals.css";
 import { useEffect } from "react";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { CoreAlertRoot } from "../components/CoreAlert";
 
 export default function App({ Component, pageProps }) {
@@ -50,18 +48,6 @@ export default function App({ Component, pageProps }) {
   return (
     <CoreAlertRoot>
       <Component {...pageProps} />
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </CoreAlertRoot>
   );
 }
