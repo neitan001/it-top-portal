@@ -1,6 +1,11 @@
+import { useState, useEffect } from 'react';
 import styles from './Navigation.module.css';
+import { usePageTransition } from './PageTransitionContext';
 
 export default function Navigation({ activePage }) {
+  const { navigateWithTransition, isTransitioning } = usePageTransition();
+  const [isExiting, setIsExiting] = useState(false);
+  
   const navItems = [
     {
       path: '/mini-app/dashboard',
@@ -50,13 +55,19 @@ export default function Navigation({ activePage }) {
     }
   ];
 
+  useEffect(() => {
+    if (isTransitioning) {
+      setIsExiting(true);
+    }
+  }, [isTransitioning]);
+
   return (
-    <nav className={styles.nav}>
+    <nav className={`${styles.nav} ${isExiting ? styles.navExit : ''}`}>
       {navItems.map((item) => (
         <button
           key={item.path}
           className={activePage === item.path ? styles.active : ''}
-          onClick={() => (window.location.href = item.path)}
+          onClick={() => navigateWithTransition(item.path)}
         >
           {item.icon}
         </button>
