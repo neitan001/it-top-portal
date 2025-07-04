@@ -37,7 +37,7 @@
 import React from 'react';
 
 export const versions = {
-  MINI_APP: 'Beta v3.0.0',
+  MINI_APP: 'Beta v3.0.2',
   CLOUD: 'Beta v1.0.0',
   JOURNAL: 'Beta v1.0.0',
   MEET: 'Beta v1.0.0',

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
 import { coreAlert } from '@/components/CoreAlert';
+import PageWrapper from '@/components/mini-app/Navigation/PageWrapper';
 
 const Profile = dynamic(() => import('@/components/mini-app/Profile/Profile'));
 
@@ -29,9 +30,13 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container">
-      <Profile tgId={tgId} onProfileReady={handleProfileReady} />
+    <>
+      <PageWrapper pagePath="/mini-app/profile">
+        <div className="container">
+          <Profile tgId={tgId} onProfileReady={handleProfileReady} />
+        </div>
+      </PageWrapper>
       <Navigation activePage="/mini-app/profile" />
-    </div>
+    </>
   );
 }

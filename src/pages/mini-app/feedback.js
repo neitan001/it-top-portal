@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
 import { coreAlert } from '@/components/CoreAlert';
+import PageWrapper from '@/components/mini-app/Navigation/PageWrapper';
 
 const Navigation = dynamic(() => import('@/components/mini-app/Navigation/Navigation'));
 const Feedback = dynamic(() => import('@/components/mini-app/Feedback/Feedback'));
@@ -28,11 +29,13 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div>
-      <Feedback tgId={tgId} onFeedbackReady={handleFeedbackReady} />
-      <div>
-        <Navigation activePage="/mini-app/feedback" />
-      </div>
-    </div>
+    <>
+      <PageWrapper pagePath="/mini-app/feedback">
+        <div>
+          <Feedback tgId={tgId} onFeedbackReady={handleFeedbackReady} />
+        </div>
+      </PageWrapper>
+      <Navigation activePage="/mini-app/feedback" />
+    </>
   );
 }

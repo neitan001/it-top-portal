@@ -1,6 +1,7 @@
 import styles from '@/styles/mini-app/Dashboard.module.css';
 import dynamic from 'next/dynamic';
 import useTelegramAuth from '@/hooks/mini-app/useTelegramAuth';
+import PageWrapper from '@/components/mini-app/Navigation/PageWrapper';
 
 const Navigation = dynamic(() => import('@/components/mini-app/Navigation/Navigation'));
 const Calendar = dynamic(() => import('@/components/mini-app/Calendar/Calendar'));
@@ -14,12 +15,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={styles.container}>
-      <EvaluationModal tgId={tgId} />
-      <Calendar tgId={tgId} />
-      <div>
-        <Navigation activePage="/mini-app/dashboard" />
-      </div>
-    </div>
+    <>
+      <PageWrapper pagePath="/mini-app/dashboard">
+        <div className={styles.container}>
+          <EvaluationModal tgId={tgId} />
+          <Calendar tgId={tgId} />
+        </div>
+      </PageWrapper>
+      <Navigation activePage="/mini-app/dashboard" />
+    </>
   );
 }

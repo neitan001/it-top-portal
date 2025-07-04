@@ -1,8 +1,9 @@
 import "@/styles/globals.css";
 import { useEffect } from "react";
 import { CoreAlertRoot } from "../components/CoreAlert";
+import { PageTransitionProvider } from "../components/mini-app/Navigation/PageTransitionContext";
 
-export default function App({ Component, pageProps }) {
+export default function App({ Component, pageProps, router }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -45,9 +46,18 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
+  // Проверяем, является ли текущая страница mini-app
+  const isMiniAppPage = router?.pathname?.startsWith('/mini-app/');
+
   return (
     <CoreAlertRoot>
-      <Component {...pageProps} />
+      {isMiniAppPage ? (
+        <PageTransitionProvider>
+          <Component {...pageProps} />
+        </PageTransitionProvider>
+      ) : (
+        <Component {...pageProps} />
+      )}
     </CoreAlertRoot>
   );
 }
